@@ -9,6 +9,13 @@ struct KeyboardEntry: Codable, FetchableRecord, PersistableRecord {
     var modifierFlags: Int
     var count: Int
 
+    enum CodingKeys: String, CodingKey {
+        case date
+        case keyCode = "key_code"
+        case modifierFlags = "modifier_flags"
+        case count
+    }
+
     enum Columns {
         static let date = Column(CodingKeys.date)
         static let keyCode = Column(CodingKeys.keyCode)

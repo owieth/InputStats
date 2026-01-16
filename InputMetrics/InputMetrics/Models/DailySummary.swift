@@ -4,12 +4,21 @@ import GRDB
 struct DailySummary: Codable, FetchableRecord, PersistableRecord {
     static let databaseTableName = "daily_summary"
 
-    var date: String // "2025-01-16"
+    var date: String
     var mouseDistancePx: Double
     var mouseClicksLeft: Int
     var mouseClicksRight: Int
     var mouseClicksMiddle: Int
     var keystrokes: Int
+
+    enum CodingKeys: String, CodingKey {
+        case date
+        case mouseDistancePx = "mouse_distance_px"
+        case mouseClicksLeft = "mouse_clicks_left"
+        case mouseClicksRight = "mouse_clicks_right"
+        case mouseClicksMiddle = "mouse_clicks_middle"
+        case keystrokes
+    }
 
     enum Columns {
         static let date = Column(CodingKeys.date)

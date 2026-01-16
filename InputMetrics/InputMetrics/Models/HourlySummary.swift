@@ -10,6 +10,14 @@ struct HourlySummary: Codable, FetchableRecord, PersistableRecord {
     var mouseClicks: Int
     var keystrokes: Int
 
+    enum CodingKeys: String, CodingKey {
+        case date
+        case hour
+        case mouseDistancePx = "mouse_distance_px"
+        case mouseClicks = "mouse_clicks"
+        case keystrokes
+    }
+
     enum Columns {
         static let date = Column(CodingKeys.date)
         static let hour = Column(CodingKeys.hour)

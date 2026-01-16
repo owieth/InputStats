@@ -10,6 +10,14 @@ struct MouseHeatmapEntry: Codable, FetchableRecord, PersistableRecord {
     var bucketY: Int
     var clickCount: Int
 
+    enum CodingKeys: String, CodingKey {
+        case date
+        case screenId = "screen_id"
+        case bucketX = "bucket_x"
+        case bucketY = "bucket_y"
+        case clickCount = "click_count"
+    }
+
     enum Columns {
         static let date = Column(CodingKeys.date)
         static let screenId = Column(CodingKeys.screenId)
