@@ -224,12 +224,8 @@ struct SettingsView: View {
         csv += "=== DAILY SUMMARY ===\n"
         csv += "Date,Mouse Distance (px),Left Clicks,Right Clicks,Middle Clicks,Keystrokes\n"
 
-        // Get all daily summaries (this is a simplified version)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
-
-        if let summary = DatabaseManager.shared.getDailySummary(date: today) {
+        let allSummaries = DatabaseManager.shared.getAllDailySummaries()
+        for summary in allSummaries {
             csv += "\(summary.date),\(summary.mouseDistancePx),\(summary.mouseClicksLeft),\(summary.mouseClicksRight),\(summary.mouseClicksMiddle),\(summary.keystrokes)\n"
         }
 
@@ -239,8 +235,8 @@ struct SettingsView: View {
         csv += "=== MOUSE HEATMAP ===\n"
         csv += "Date,Screen ID,Bucket X,Bucket Y,Click Count\n"
 
-        let mouseData = DatabaseManager.shared.getMouseHeatmap(date: today)
-        for entry in mouseData {
+        let allMouseData = DatabaseManager.shared.getAllMouseHeatmapEntries()
+        for entry in allMouseData {
             csv += "\(entry.date),\(entry.screenId),\(entry.bucketX),\(entry.bucketY),\(entry.clickCount)\n"
         }
 
@@ -250,8 +246,8 @@ struct SettingsView: View {
         csv += "=== KEYBOARD HEATMAP ===\n"
         csv += "Date,Key Code,Key Name,Modifier Flags,Count\n"
 
-        let keyboardData = DatabaseManager.shared.getKeyboardEntries(date: today)
-        for entry in keyboardData {
+        let allKeyboardData = DatabaseManager.shared.getAllKeyboardEntries()
+        for entry in allKeyboardData {
             let keyName = KeyCodeMapping.keyName(for: entry.keyCode)
             csv += "\(entry.date),\(entry.keyCode),\(keyName),\(entry.modifierFlags),\(entry.count)\n"
         }

@@ -251,6 +251,47 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    // MARK: - Fetch All (for export)
+
+    func getAllDailySummaries() -> [DailySummary] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try DailySummary.order(DailySummary.Columns.date).fetchAll(db)
+            }
+        } catch {
+            print("Error fetching all daily summaries: \(error)")
+            return []
+        }
+    }
+
+    func getAllMouseHeatmapEntries() -> [MouseHeatmapEntry] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try MouseHeatmapEntry.order(MouseHeatmapEntry.Columns.date).fetchAll(db)
+            }
+        } catch {
+            print("Error fetching all mouse heatmap entries: \(error)")
+            return []
+        }
+    }
+
+    func getAllKeyboardEntries() -> [KeyboardEntry] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try KeyboardEntry.order(KeyboardEntry.Columns.date).fetchAll(db)
+            }
+        } catch {
+            print("Error fetching all keyboard entries: \(error)")
+            return []
+        }
+    }
+
     // MARK: - Utility
 
     func resetAllData() {
