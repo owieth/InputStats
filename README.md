@@ -34,3 +34,20 @@ Built with Swift, SwiftUI, and SQLite:
 - **Heatmaps**: Canvas-based rendering with 50×50 grid
 
 See [InputMetrics-Plan.md](InputMetrics-Plan.md) for complete technical specification.
+
+## Roadmap
+
+### Historical Browsing
+- Date navigation to browse past days/weeks/months
+- Week/Month/Year chart range picker
+- Heatmaps and stats for any selected date
+
+### Menu Bar Live Stats
+- Show live keystroke/click count next to the menu bar icon (e.g. `1.2k · 340`)
+- Toggle in Settings to enable/disable
+
+### macOS Widgets
+- WidgetKit extension with Small, Medium, and Large sizes
+- Small: today's keystrokes + clicks
+- Medium: today's stats + mini 7-day bar chart
+- Shared App Group container for DB access between app and widget
