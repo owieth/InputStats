@@ -33,6 +33,7 @@ struct MenuBarView: View {
                     Image(systemName: "gearshape")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Settings")
 
                 Spacer()
 
@@ -481,6 +482,8 @@ struct HeatmapCanvas: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Mouse click heatmap")
         .background(Color.black.opacity(0.05))
         .cornerRadius(8)
     }

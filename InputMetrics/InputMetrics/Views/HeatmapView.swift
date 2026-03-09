@@ -33,6 +33,8 @@ struct HeatmapView: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Mouse click heatmap")
         .background(Color.black.opacity(0.1))
         .cornerRadius(8)
         .onAppear {
