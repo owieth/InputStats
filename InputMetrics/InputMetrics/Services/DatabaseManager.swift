@@ -227,6 +227,37 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    func updateKeyboardBatch(date: String, entries: [(keyCode: Int, modifierFlags: Int, count: Int)]) {
+        guard let db = dbQueue else { return }
+
+        dbQueue_serial.async {
+            do {
+                try db.write { db in
+                    for entry in entries {
+                        if var existing = try KeyboardEntry
+                            .filter(KeyboardEntry.Columns.date == date)
+                            .filter(KeyboardEntry.Columns.keyCode == entry.keyCode)
+                            .filter(KeyboardEntry.Columns.modifierFlags == entry.modifierFlags)
+                            .fetchOne(db) {
+                            existing.count += entry.count
+                            try existing.update(db)
+                        } else {
+                            let newEntry = KeyboardEntry(
+                                date: date,
+                                keyCode: entry.keyCode,
+                                modifierFlags: entry.modifierFlags,
+                                count: entry.count
+                            )
+                            try newEntry.insert(db)
+                        }
+                    }
+                }
+            } catch {
+                print("Error updating keyboard batch: \(error)")
+            }
+        }
+    }
+
     func getKeyboardEntries(date: String) -> [KeyboardEntry] {
         guard let db = dbQueue else { return [] }
 

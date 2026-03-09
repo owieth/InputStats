@@ -9,6 +9,13 @@ class KeyboardTracker {
     private var persistTimer: Timer?
     private let persistInterval: TimeInterval = 30.0
 
+    private struct HeatmapKey: Hashable {
+        let keyCode: Int
+        let modifierFlags: Int
+    }
+
+    private var heatmapBuffer: [HeatmapKey: Int] = [:]
+
     private init() {
         setupPersistTimer()
     }
@@ -16,16 +23,11 @@ class KeyboardTracker {
     func trackKeystroke(keyCode: Int, modifierFlags: CGEventFlags) {
         totalKeystrokes += 1
 
-        let today = getTodayString()
         let meaningfulFlags = modifierFlags.intersection([.maskShift, .maskControl, .maskAlternate, .maskCommand])
         let modifierInt = Int(meaningfulFlags.rawValue)
 
-        // Update keyboard heatmap in database
-        DatabaseManager.shared.updateKeyboard(
-            date: today,
-            keyCode: keyCode,
-            modifierFlags: modifierInt
-        )
+        let key = HeatmapKey(keyCode: keyCode, modifierFlags: modifierInt)
+        heatmapBuffer[key, default: 0] += 1
     }
 
     private func setupPersistTimer() {
@@ -44,15 +46,27 @@ class KeyboardTracker {
             keystrokes: totalKeystrokes
         )
 
-        // Reset counter
+        let bufferedEntries = heatmapBuffer
+        heatmapBuffer.removeAll(keepingCapacity: true)
+
+        if !bufferedEntries.isEmpty {
+            DatabaseManager.shared.updateKeyboardBatch(
+                date: today,
+                entries: bufferedEntries.map { (key, count) in
+                    (keyCode: key.keyCode, modifierFlags: key.modifierFlags, count: count)
+                }
+            )
+        }
+
         let count = totalKeystrokes
         totalKeystrokes = 0
 
-        print("Keyboard data persisted: \(count) keystrokes")
+        print("Keyboard data persisted: \(count) keystrokes, \(bufferedEntries.count) unique keys")
     }
 
     func reset() {
         totalKeystrokes = 0
+        heatmapBuffer.removeAll()
     }
 
     func getCurrentKeystrokes() -> Int {
