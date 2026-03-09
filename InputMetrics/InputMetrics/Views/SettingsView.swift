@@ -15,7 +15,7 @@ struct SettingsView: View {
                     VStack(spacing: 8) {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 48))
-                            .foregroundStyle(.blue.gradient)
+                            .foregroundStyle(.blue)
 
                         Text("Settings")
                             .font(.title.bold())
