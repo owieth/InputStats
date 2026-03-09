@@ -1,6 +1,6 @@
 import Foundation
 
-enum DistanceUnit {
+enum DistanceUnit: String {
     case metric
     case imperial
 }

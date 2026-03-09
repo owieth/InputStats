@@ -33,7 +33,7 @@ class UserPreferences: ObservableObject {
 
     @Published var distanceUnit: DistanceUnit {
         didSet {
-            UserDefaults.standard.set(distanceUnit == .metric ? "metric" : "imperial", forKey: "distanceUnit")
+            UserDefaults.standard.set(distanceUnit.rawValue, forKey: "distanceUnit")
         }
     }
 
@@ -50,8 +50,8 @@ class UserPreferences: ObservableObject {
     }
 
     private init() {
-        let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? "metric"
-        self.distanceUnit = savedUnit == "metric" ? .metric : .imperial
+        let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? DistanceUnit.metric.rawValue
+        self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .metric
         self.showLiveStats = UserDefaults.standard.object(forKey: "showLiveStats") as? Bool ?? true
 
         let savedRetention = UserDefaults.standard.string(forKey: "dataRetentionPeriod") ?? "forever"

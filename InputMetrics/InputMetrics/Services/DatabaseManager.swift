@@ -376,9 +376,10 @@ final class DatabaseManager: @unchecked Sendable {
         dbQueue_serial.async {
             do {
                 try db.write { db in
-                    try db.execute(sql: "DELETE FROM daily_summary")
-                    try db.execute(sql: "DELETE FROM mouse_heatmap")
-                    try db.execute(sql: "DELETE FROM keyboard_heatmap")
+                    try db.execute(sql: "DELETE FROM \(DailySummary.databaseTableName)")
+                    try db.execute(sql: "DELETE FROM \(MouseHeatmapEntry.databaseTableName)")
+                    try db.execute(sql: "DELETE FROM \(KeyboardEntry.databaseTableName)")
+                    try db.execute(sql: "DELETE FROM \(HourlySummary.databaseTableName)")
                 }
                 print("All data reset successfully")
             } catch {
