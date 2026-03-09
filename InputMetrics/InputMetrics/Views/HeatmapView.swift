@@ -42,6 +42,7 @@ struct HeatmapView: View {
 
     private func loadHeatmapData() {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         let today = formatter.string(from: Date())
 

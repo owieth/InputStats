@@ -372,6 +372,7 @@ struct MenuBarView: View {
         let calendar = Calendar.current
         let today = Date()
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
 
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: today) else { return }
@@ -427,6 +428,7 @@ struct MenuBarView: View {
 
     private func shortDay(from dateString: String) -> String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         guard let date = formatter.date(from: dateString) else { return "" }
 
@@ -436,6 +438,7 @@ struct MenuBarView: View {
 
     private func getTodayString() -> String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
     }

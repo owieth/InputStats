@@ -83,6 +83,7 @@ struct MouseStatsView: View {
         let calendar = Calendar.current
         let today = Date()
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
 
         let daysBack: Int
@@ -104,6 +105,7 @@ struct MouseStatsView: View {
         // TODO: Add a method to get all-time totals from database
         // For now, just get today's data
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         let today = formatter.string(from: Date())
 
