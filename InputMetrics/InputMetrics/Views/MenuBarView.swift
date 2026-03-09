@@ -95,25 +95,8 @@ struct MenuBarView: View {
                         .font(.title2)
                         .foregroundStyle(.blue)
 
-                    let meters = DistanceConverter.pixelsToMeters(mouseDistance)
-                    if preferences.distanceUnit == .metric {
-                        if meters < 1000 {
-                            Text(String(format: "%.1f m", meters))
-                                .font(.title.bold())
-                        } else {
-                            Text(String(format: "%.2f km", meters / 1000))
-                                .font(.title.bold())
-                        }
-                    } else {
-                        let feet = meters * 3.28084
-                        if feet < 5280 {
-                            Text(String(format: "%.1f ft", feet))
-                                .font(.title.bold())
-                        } else {
-                            Text(String(format: "%.2f mi", feet / 5280))
-                                .font(.title.bold())
-                        }
-                    }
+                    Text(DistanceConverter.formatDistance(mouseDistance, unit: preferences.distanceUnit))
+                        .font(.title.bold())
 
                     Text("Distance")
                         .font(.caption)
@@ -292,25 +275,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    let meters = DistanceConverter.pixelsToMeters(allTimeDistance)
-                    if preferences.distanceUnit == .metric {
-                        if meters < 1000 {
-                            Text(String(format: "%.0f m", meters))
-                                .font(.title2.bold().monospacedDigit())
-                        } else {
-                            Text(String(format: "%.1f km", meters / 1000))
-                                .font(.title2.bold().monospacedDigit())
-                        }
-                    } else {
-                        let feet = meters * 3.28084
-                        if feet < 5280 {
-                            Text(String(format: "%.0f ft", feet))
-                                .font(.title2.bold().monospacedDigit())
-                        } else {
-                            Text(String(format: "%.1f mi", feet / 5280))
-                                .font(.title2.bold().monospacedDigit())
-                        }
-                    }
+                    Text(DistanceConverter.formatDistance(allTimeDistance, unit: preferences.distanceUnit))
+                        .font(.title2.bold().monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
