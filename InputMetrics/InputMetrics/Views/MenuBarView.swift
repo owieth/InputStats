@@ -4,27 +4,9 @@ import Charts
 
 struct MenuBarView: View {
     @ObservedObject private var preferences = UserPreferences.shared
-    @State private var selectedTab: MetricTab = .mouse
-    @State private var mouseDistance: Double = 0
-    @State private var keystrokes: Int = 0
-    @State private var leftClicks: Int = 0
-    @State private var rightClicks: Int = 0
-    @State private var middleClicks: Int = 0
-    @State private var chartData: [DailySummary] = []
-    @State private var heatmapData: [[Int]] = []
-    @State private var keyboardEntries: [KeyboardEntry] = []
-    @State private var scrollVertical: Double = 0
-    @State private var scrollHorizontal: Double = 0
-    @State private var allTimeDistance: Double = 0
-    @State private var allTimeClicks: Int = 0
-    @State private var allTimeKeystrokes: Int = 0
-    @State private var allTimeScrollVertical: Double = 0
-    @State private var allTimeScrollHorizontal: Double = 0
-    @State private var cachedTotals: DatabaseManager.AllTimeTotals = .zero
-    @State private var lastCacheTime: Date = .distantPast
+    @State private var viewModel = MenuBarViewModel()
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    private let cacheInterval: TimeInterval = 30
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,9 +22,9 @@ struct MenuBarView: View {
 
                 Spacer()
 
-                Picker("Metric", selection: $selectedTab) {
-                    Text("Mouse Metrics").tag(MetricTab.mouse)
-                    Text("Keyboard Metrics").tag(MetricTab.keyboard)
+                Picker("Metric", selection: $viewModel.selectedTab) {
+                    Text("Mouse Metrics").tag(MenuBarViewModel.MetricTab.mouse)
+                    Text("Keyboard Metrics").tag(MenuBarViewModel.MetricTab.keyboard)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -59,7 +41,7 @@ struct MenuBarView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
 
-                    if selectedTab == .mouse {
+                    if viewModel.selectedTab == .mouse {
                         mouseMetricsView
                     } else {
                         keyboardMetricsView
@@ -76,17 +58,12 @@ struct MenuBarView: View {
         }
         .frame(width: 420, height: 600)
         .onReceive(timer) { _ in
-            updateStats()
-            refreshAllTimeTotalsIfNeeded()
-            updateAllTimeStats()
+            viewModel.updateStats()
+            viewModel.refreshAllTimeTotalsIfNeeded()
+            viewModel.updateAllTimeStats()
         }
         .onAppear {
-            updateStats()
-            loadChartData()
-            loadHeatmapData()
-            loadKeyboardData()
-            refreshCachedTotals()
-            updateAllTimeStats()
+            viewModel.loadAll()
         }
     }
 
@@ -100,7 +77,7 @@ struct MenuBarView: View {
                         .font(.title2)
                         .foregroundStyle(.blue)
 
-                    Text(DistanceConverter.formatDistance(mouseDistance, unit: preferences.distanceUnit))
+                    Text(DistanceConverter.formatDistance(viewModel.mouseDistance, unit: preferences.distanceUnit))
                         .font(.title.bold())
 
                     Text("Distance")
@@ -118,7 +95,7 @@ struct MenuBarView: View {
                         .font(.title2)
                         .foregroundStyle(.green)
 
-                    Text("\(leftClicks + rightClicks + middleClicks)")
+                    Text("\(viewModel.totalClicks)")
                         .font(.title.bold())
 
                     Text("Clicks")
@@ -136,7 +113,7 @@ struct MenuBarView: View {
                         .font(.title2)
                         .foregroundStyle(.orange)
 
-                    let totalScroll = scrollVertical + scrollHorizontal
+                    let totalScroll = viewModel.scrollVertical + viewModel.scrollHorizontal
                     if totalScroll < 1000 {
                         Text(String(format: "%.0f px", totalScroll))
                             .font(.title.bold())
@@ -162,11 +139,11 @@ struct MenuBarView: View {
                     .font(.headline)
                     .padding(.horizontal)
 
-                if !chartData.isEmpty {
-                    Chart(chartData.suffix(7), id: \.date) { item in
+                if !viewModel.chartData.isEmpty {
+                    Chart(viewModel.chartData.suffix(7), id: \.date) { item in
                         BarMark(
-                            x: .value("Day", shortDay(from: item.date)),
-                            y: .value("Distance", chartDistance(item.mouseDistancePx))
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
+                            y: .value("Distance", viewModel.chartDistance(item.mouseDistancePx, unit: preferences.distanceUnit))
                         )
                         .foregroundStyle(.blue.gradient)
                     }
@@ -183,8 +160,8 @@ struct MenuBarView: View {
             // Mouse Heatmap
             VStack(alignment: .leading, spacing: 8) {
                 DisclosureGroup("Mouse Heatmap") {
-                    if !heatmapData.isEmpty {
-                        HeatmapCanvas(data: heatmapData)
+                    if !viewModel.heatmapData.isEmpty {
+                        HeatmapCanvas(data: viewModel.heatmapData)
                             .frame(height: 200)
                             .padding(.top, 8)
                     } else {
@@ -206,7 +183,7 @@ struct MenuBarView: View {
                     .font(.title2)
                     .foregroundStyle(.purple)
 
-                Text("\(keystrokes)")
+                Text("\(viewModel.keystrokes)")
                     .font(.title.bold())
 
                 Text("Keystrokes Today")
@@ -225,10 +202,10 @@ struct MenuBarView: View {
                     .font(.headline)
                     .padding(.horizontal)
 
-                if !chartData.isEmpty {
-                    Chart(chartData.suffix(7), id: \.date) { item in
+                if !viewModel.chartData.isEmpty {
+                    Chart(viewModel.chartData.suffix(7), id: \.date) { item in
                         BarMark(
-                            x: .value("Day", shortDay(from: item.date)),
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
                             y: .value("Keystrokes", item.keystrokes)
                         )
                         .foregroundStyle(.purple.gradient)
@@ -245,8 +222,8 @@ struct MenuBarView: View {
             // Keyboard Heatmap
             VStack(alignment: .leading, spacing: 8) {
                 DisclosureGroup("Keyboard Heatmap") {
-                    if !keyboardEntries.isEmpty {
-                        MiniKeyboardHeatmap(entries: keyboardEntries)
+                    if !viewModel.keyboardEntries.isEmpty {
+                        MiniKeyboardHeatmap(entries: viewModel.keyboardEntries)
                             .frame(height: 150)
                             .padding(.top, 8)
                     } else {
@@ -264,10 +241,9 @@ struct MenuBarView: View {
                     .font(.headline)
                     .padding(.horizontal)
 
-                if !keyboardEntries.isEmpty {
-                    let topKeys = keyboardEntries.sorted { $0.count > $1.count }.prefix(5)
+                if !viewModel.keyboardEntries.isEmpty {
                     HStack(spacing: 8) {
-                        ForEach(Array(topKeys), id: \.compositeId) { entry in
+                        ForEach(viewModel.topKeys, id: \.compositeId) { entry in
                             VStack(spacing: 4) {
                                 Text(KeyCodeMapping.keyName(for: entry.keyCode))
                                     .font(.caption.bold())
@@ -304,7 +280,7 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    Text(DistanceConverter.formatDistance(allTimeDistance, unit: preferences.distanceUnit))
+                    Text(DistanceConverter.formatDistance(viewModel.allTimeDistance, unit: preferences.distanceUnit))
                         .font(.title2.bold().monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -318,7 +294,7 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    Text("\(allTimeClicks)")
+                    Text("\(viewModel.allTimeClicks)")
                         .font(.title2.bold().monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -332,7 +308,7 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    Text("\(allTimeKeystrokes)")
+                    Text("\(viewModel.allTimeKeystrokes)")
                         .font(.title2.bold().monospacedDigit())
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -346,7 +322,7 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    let totalScroll = allTimeScrollVertical + allTimeScrollHorizontal
+                    let totalScroll = viewModel.allTimeScrollVertical + viewModel.allTimeScrollHorizontal
                     if totalScroll < 1000 {
                         Text(String(format: "%.0f px", totalScroll))
                             .font(.title2.bold().monospacedDigit())
@@ -362,91 +338,6 @@ struct MenuBarView: View {
             }
             .padding(.horizontal)
         }
-    }
-
-    private func updateStats() {
-        let mouseStats = MouseTracker.shared.getCurrentStats()
-        let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
-
-        let today = DateHelper.todayString()
-        if let summary = DatabaseManager.shared.getDailySummary(date: today) {
-            mouseDistance = summary.mouseDistancePx + mouseStats.distance
-            keystrokes = summary.keystrokes + keyboardStats
-            leftClicks = summary.mouseClicksLeft + mouseStats.left
-            rightClicks = summary.mouseClicksRight + mouseStats.right
-            middleClicks = summary.mouseClicksMiddle + mouseStats.middle
-            scrollVertical = summary.scrollDistanceVertical + mouseStats.scrollV
-            scrollHorizontal = summary.scrollDistanceHorizontal + mouseStats.scrollH
-        } else {
-            mouseDistance = mouseStats.distance
-            keystrokes = keyboardStats
-            leftClicks = mouseStats.left
-            rightClicks = mouseStats.right
-            middleClicks = mouseStats.middle
-            scrollVertical = mouseStats.scrollV
-            scrollHorizontal = mouseStats.scrollH
-        }
-    }
-
-    private func loadChartData() {
-        let calendar = Calendar.current
-        let today = Date()
-
-        guard let startDate = calendar.date(byAdding: .day, value: -6, to: today) else { return }
-
-        let startString = DateHelper.string(from: startDate)
-        let endString = DateHelper.string(from: today)
-
-        chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
-    }
-
-    private func loadHeatmapData() {
-        let today = DateHelper.todayString()
-        let entries = DatabaseManager.shared.getMouseHeatmap(date: today)
-        heatmapData = HeatmapGridBuilder.buildGrid(from: entries)
-    }
-
-    private func loadKeyboardData() {
-        let today = DateHelper.todayString()
-        keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: today)
-    }
-
-    private func refreshCachedTotals() {
-        cachedTotals = DatabaseManager.shared.getAllTimeTotals()
-        lastCacheTime = Date()
-    }
-
-    private func refreshAllTimeTotalsIfNeeded() {
-        guard Date().timeIntervalSince(lastCacheTime) >= cacheInterval else { return }
-        refreshCachedTotals()
-    }
-
-    private func updateAllTimeStats() {
-        let mouseStats = MouseTracker.shared.getCurrentStats()
-        allTimeDistance = cachedTotals.distance + mouseStats.distance
-        allTimeClicks = cachedTotals.totalClicks + mouseStats.left + mouseStats.right + mouseStats.middle
-        allTimeKeystrokes = cachedTotals.keystrokes + KeyboardTracker.shared.getCurrentKeystrokes()
-        allTimeScrollVertical = cachedTotals.scrollVertical + mouseStats.scrollV
-        allTimeScrollHorizontal = cachedTotals.scrollHorizontal + mouseStats.scrollH
-    }
-
-    private func chartDistance(_ pixels: Double) -> Double {
-        let meters = DistanceConverter.pixelsToMeters(pixels)
-        if preferences.distanceUnit == .metric {
-            return DistanceConverter.metersToKilometers(meters)
-        } else {
-            let feet = DistanceConverter.metersToFeet(meters)
-            return DistanceConverter.feetToMiles(feet)
-        }
-    }
-
-    private func shortDay(from dateString: String) -> String {
-        guard let date = DateHelper.date(from: dateString) else { return "" }
-
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "EEE"
-        return formatter.string(from: date)
     }
 }
 

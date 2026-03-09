@@ -1,37 +1,29 @@
 import SwiftUI
 import Charts
 
-enum TimeRange {
-    case week
-    case month
-    case year
-}
-
 struct MouseStatsView: View {
-    @State private var selectedRange: TimeRange = .week
-    @State private var chartData: [DailySummary] = []
-    @State private var allTimeStats: DailySummary?
+    @State private var viewModel = MouseStatsViewModel()
 
     var body: some View {
         VStack(spacing: 20) {
             // Time range selector
             HStack {
                 Spacer()
-                Picker("Range", selection: $selectedRange) {
+                Picker("Range", selection: $viewModel.selectedRange) {
                     Text("Week").tag(TimeRange.week)
                     Text("Month").tag(TimeRange.month)
                     Text("Year").tag(TimeRange.year)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 250)
-                .onChange(of: selectedRange) { _, _ in
-                    loadChartData()
+                .onChange(of: viewModel.selectedRange) { _, _ in
+                    viewModel.onRangeChanged()
                 }
             }
             .padding(.horizontal)
 
             // Chart
-            ChartView(data: chartData, range: selectedRange)
+            ChartView(data: viewModel.chartData, range: viewModel.selectedRange)
                 .frame(height: 250)
                 .padding()
 
@@ -50,18 +42,18 @@ struct MouseStatsView: View {
                     Text("All-Time Stats")
                         .font(.headline)
 
-                    if let stats = allTimeStats {
+                    if let stats = viewModel.allTimeStats {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Distance: \(DistanceConverter.formatDistance(stats.mouseDistancePx))")
                             Text("Clicks: \(stats.mouseClicksLeft + stats.mouseClicksRight + stats.mouseClicksMiddle)")
-                            Text("Scroll: \(formatScrollDistance(vertical: stats.scrollDistanceVertical, horizontal: stats.scrollDistanceHorizontal))")
+                            Text("Scroll: \(viewModel.formatScrollDistance(vertical: stats.scrollDistanceVertical, horizontal: stats.scrollDistanceHorizontal))")
                             Text("Keystrokes: \(stats.keystrokes)")
 
                             Divider()
 
-                            Text("🌍 " + DistanceConverter.formatEarthComparison(stats.mouseDistancePx))
+                            Text("\u{1F30D} " + DistanceConverter.formatEarthComparison(stats.mouseDistancePx))
                                 .font(.caption)
-                            Text("🌙 " + DistanceConverter.formatMoonComparison(stats.mouseDistancePx))
+                            Text("\u{1F319} " + DistanceConverter.formatMoonComparison(stats.mouseDistancePx))
                                 .font(.caption)
                         }
                     } else {
@@ -75,52 +67,8 @@ struct MouseStatsView: View {
             .padding()
         }
         .onAppear {
-            loadChartData()
-            loadAllTimeStats()
+            viewModel.loadAll()
         }
-    }
-
-    private func loadChartData() {
-        let calendar = Calendar.current
-        let today = Date()
-
-        let daysBack: Int
-        switch selectedRange {
-        case .week: daysBack = 7
-        case .month: daysBack = 30
-        case .year: daysBack = 365
-        }
-
-        guard let startDate = calendar.date(byAdding: .day, value: -daysBack, to: today) else { return }
-
-        let startString = DateHelper.string(from: startDate)
-        let endString = DateHelper.string(from: today)
-
-        chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
-    }
-
-    private func formatScrollDistance(vertical: Double, horizontal: Double) -> String {
-        let total = vertical + horizontal
-        if total < 1000 {
-            return String(format: "%.0f px", total)
-        } else {
-            return String(format: "%.1f K px", total / 1000)
-        }
-    }
-
-    private func loadAllTimeStats() {
-        let totals = DatabaseManager.shared.getAllTimeTotals()
-
-        allTimeStats = DailySummary(
-            date: "",
-            mouseDistancePx: totals.distance,
-            mouseClicksLeft: totals.clicksLeft,
-            mouseClicksRight: totals.clicksRight,
-            mouseClicksMiddle: totals.clicksMiddle,
-            keystrokes: totals.keystrokes,
-            scrollDistanceVertical: totals.scrollVertical,
-            scrollDistanceHorizontal: totals.scrollHorizontal
-        )
     }
 }
 
