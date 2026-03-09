@@ -131,7 +131,7 @@ class MouseTracker {
         // Find which screen contains this point
         for screen in NSScreen.screens {
             if screen.frame.contains(point) {
-                return screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? String ?? "primary"
+                return (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.stringValue ?? "primary"
             }
         }
         return "primary"
