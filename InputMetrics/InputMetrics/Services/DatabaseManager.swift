@@ -73,15 +73,6 @@ final class DatabaseManager: @unchecked Sendable {
                 t.primaryKey(["date", "key_code", "modifier_flags"])
             }
 
-            // Hourly summary table
-            try db.create(table: "hourly_summary") { t in
-                t.column("date", .text)
-                t.column("hour", .integer)
-                t.column("mouse_distance_px", .double).defaults(to: 0)
-                t.column("mouse_clicks", .integer).defaults(to: 0)
-                t.column("keystrokes", .integer).defaults(to: 0)
-                t.primaryKey(["date", "hour"])
-            }
         }
 
         return migrator
@@ -303,7 +294,6 @@ final class DatabaseManager: @unchecked Sendable {
                     try db.execute(sql: "DELETE FROM daily_summary")
                     try db.execute(sql: "DELETE FROM mouse_heatmap")
                     try db.execute(sql: "DELETE FROM keyboard_heatmap")
-                    try db.execute(sql: "DELETE FROM hourly_summary")
                 }
                 print("All data reset successfully")
             } catch {
