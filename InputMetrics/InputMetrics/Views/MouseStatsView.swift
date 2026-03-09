@@ -102,14 +102,30 @@ struct MouseStatsView: View {
     }
 
     private func loadAllTimeStats() {
-        // TODO: Add a method to get all-time totals from database
-        // For now, just get today's data
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
+        let allSummaries = DatabaseManager.shared.getAllDailySummaries()
 
-        allTimeStats = DatabaseManager.shared.getDailySummary(date: today)
+        var totalDistance: Double = 0
+        var totalClicksLeft: Int = 0
+        var totalClicksRight: Int = 0
+        var totalClicksMiddle: Int = 0
+        var totalKeystrokes: Int = 0
+
+        for summary in allSummaries {
+            totalDistance += summary.mouseDistancePx
+            totalClicksLeft += summary.mouseClicksLeft
+            totalClicksRight += summary.mouseClicksRight
+            totalClicksMiddle += summary.mouseClicksMiddle
+            totalKeystrokes += summary.keystrokes
+        }
+
+        allTimeStats = DailySummary(
+            date: "",
+            mouseDistancePx: totalDistance,
+            mouseClicksLeft: totalClicksLeft,
+            mouseClicksRight: totalClicksRight,
+            mouseClicksMiddle: totalClicksMiddle,
+            keystrokes: totalKeystrokes
+        )
     }
 }
 
