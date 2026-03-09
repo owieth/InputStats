@@ -255,39 +255,61 @@ struct SettingsView: View {
         }
     }
 
+    private func csvField(_ value: String) -> String {
+        let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+        return "\"\(escaped)\""
+    }
+
+    private func csvRow(_ fields: [String]) -> String {
+        fields.map { csvField($0) }.joined(separator: ",")
+    }
+
     private func generateCSV() -> String {
         var csv = ""
 
-        // Daily summary section
-        csv += "=== DAILY SUMMARY ===\n"
-        csv += "Date,Mouse Distance (px),Left Clicks,Right Clicks,Middle Clicks,Keystrokes\n"
+        csv += csvRow(["Date", "Mouse Distance (px)", "Left Clicks", "Right Clicks", "Middle Clicks", "Keystrokes"]) + "\n"
 
         let allSummaries = DatabaseManager.shared.getAllDailySummaries()
         for summary in allSummaries {
-            csv += "\(summary.date),\(summary.mouseDistancePx),\(summary.mouseClicksLeft),\(summary.mouseClicksRight),\(summary.mouseClicksMiddle),\(summary.keystrokes)\n"
+            csv += csvRow([
+                summary.date,
+                "\(summary.mouseDistancePx)",
+                "\(summary.mouseClicksLeft)",
+                "\(summary.mouseClicksRight)",
+                "\(summary.mouseClicksMiddle)",
+                "\(summary.keystrokes)"
+            ]) + "\n"
         }
 
         csv += "\n"
 
-        // Mouse heatmap section
-        csv += "=== MOUSE HEATMAP ===\n"
-        csv += "Date,Screen ID,Bucket X,Bucket Y,Click Count\n"
+        csv += csvRow(["Date", "Screen ID", "Bucket X", "Bucket Y", "Click Count"]) + "\n"
 
         let allMouseData = DatabaseManager.shared.getAllMouseHeatmapEntries()
         for entry in allMouseData {
-            csv += "\(entry.date),\(entry.screenId),\(entry.bucketX),\(entry.bucketY),\(entry.clickCount)\n"
+            csv += csvRow([
+                entry.date,
+                "\(entry.screenId)",
+                "\(entry.bucketX)",
+                "\(entry.bucketY)",
+                "\(entry.clickCount)"
+            ]) + "\n"
         }
 
         csv += "\n"
 
-        // Keyboard heatmap section
-        csv += "=== KEYBOARD HEATMAP ===\n"
-        csv += "Date,Key Code,Key Name,Modifier Flags,Count\n"
+        csv += csvRow(["Date", "Key Code", "Key Name", "Modifier Flags", "Count"]) + "\n"
 
         let allKeyboardData = DatabaseManager.shared.getAllKeyboardEntries()
         for entry in allKeyboardData {
             let keyName = KeyCodeMapping.keyName(for: entry.keyCode)
-            csv += "\(entry.date),\(entry.keyCode),\(keyName),\(entry.modifierFlags),\(entry.count)\n"
+            csv += csvRow([
+                entry.date,
+                "\(entry.keyCode)",
+                keyName,
+                "\(entry.modifierFlags)",
+                "\(entry.count)"
+            ]) + "\n"
         }
 
         return csv
