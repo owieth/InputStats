@@ -102,25 +102,19 @@ final class DatabaseManager: @unchecked Sendable {
         dbQueue_serial.async {
             do {
                 try db.write { db in
-                    // Get existing or create new
-                    if var summary = try DailySummary.fetchOne(db, key: date) {
-                        summary.mouseDistancePx += mouseDistance
-                        summary.mouseClicksLeft += leftClicks
-                        summary.mouseClicksRight += rightClicks
-                        summary.mouseClicksMiddle += middleClicks
-                        summary.keystrokes += keystrokes
-                        try summary.update(db)
-                    } else {
-                        let newSummary = DailySummary(
-                            date: date,
-                            mouseDistancePx: mouseDistance,
-                            mouseClicksLeft: leftClicks,
-                            mouseClicksRight: rightClicks,
-                            mouseClicksMiddle: middleClicks,
-                            keystrokes: keystrokes
-                        )
-                        try newSummary.insert(db)
-                    }
+                    try db.execute(
+                        sql: """
+                            INSERT INTO daily_summary (date, mouse_distance_px, mouse_clicks_left, mouse_clicks_right, mouse_clicks_middle, keystrokes)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(date) DO UPDATE SET
+                                mouse_distance_px = mouse_distance_px + excluded.mouse_distance_px,
+                                mouse_clicks_left = mouse_clicks_left + excluded.mouse_clicks_left,
+                                mouse_clicks_right = mouse_clicks_right + excluded.mouse_clicks_right,
+                                mouse_clicks_middle = mouse_clicks_middle + excluded.mouse_clicks_middle,
+                                keystrokes = keystrokes + excluded.keystrokes
+                            """,
+                        arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes]
+                    )
                 }
             } catch {
                 print("Error updating daily summary: \(error)")
@@ -165,24 +159,15 @@ final class DatabaseManager: @unchecked Sendable {
         dbQueue_serial.async {
             do {
                 try db.write { db in
-                    if var entry = try MouseHeatmapEntry
-                        .filter(MouseHeatmapEntry.Columns.date == date)
-                        .filter(MouseHeatmapEntry.Columns.screenId == screenId)
-                        .filter(MouseHeatmapEntry.Columns.bucketX == bucketX)
-                        .filter(MouseHeatmapEntry.Columns.bucketY == bucketY)
-                        .fetchOne(db) {
-                        entry.clickCount += 1
-                        try entry.update(db)
-                    } else {
-                        let newEntry = MouseHeatmapEntry(
-                            date: date,
-                            screenId: screenId,
-                            bucketX: bucketX,
-                            bucketY: bucketY,
-                            clickCount: 1
-                        )
-                        try newEntry.insert(db)
-                    }
+                    try db.execute(
+                        sql: """
+                            INSERT INTO mouse_heatmap (date, screen_id, bucket_x, bucket_y, click_count)
+                            VALUES (?, ?, ?, ?, 1)
+                            ON CONFLICT(date, screen_id, bucket_x, bucket_y) DO UPDATE SET
+                                click_count = click_count + 1
+                            """,
+                        arguments: [date, screenId, bucketX, bucketY]
+                    )
                 }
             } catch {
                 print("Error updating mouse heatmap: \(error)")
@@ -213,22 +198,15 @@ final class DatabaseManager: @unchecked Sendable {
         dbQueue_serial.async {
             do {
                 try db.write { db in
-                    if var entry = try KeyboardEntry
-                        .filter(KeyboardEntry.Columns.date == date)
-                        .filter(KeyboardEntry.Columns.keyCode == keyCode)
-                        .filter(KeyboardEntry.Columns.modifierFlags == modifierFlags)
-                        .fetchOne(db) {
-                        entry.count += 1
-                        try entry.update(db)
-                    } else {
-                        let newEntry = KeyboardEntry(
-                            date: date,
-                            keyCode: keyCode,
-                            modifierFlags: modifierFlags,
-                            count: 1
-                        )
-                        try newEntry.insert(db)
-                    }
+                    try db.execute(
+                        sql: """
+                            INSERT INTO keyboard_heatmap (date, key_code, modifier_flags, count)
+                            VALUES (?, ?, ?, 1)
+                            ON CONFLICT(date, key_code, modifier_flags) DO UPDATE SET
+                                count = count + 1
+                            """,
+                        arguments: [date, keyCode, modifierFlags]
+                    )
                 }
             } catch {
                 print("Error updating keyboard entry: \(error)")
