@@ -6,6 +6,13 @@ enum ClickType: Sendable {
     case left, right, middle
 }
 
+struct HeatmapBucketKey: Hashable {
+    let date: String
+    let screenId: String
+    let bucketX: Int
+    let bucketY: Int
+}
+
 @MainActor
 class MouseTracker {
     static let shared = MouseTracker()
@@ -15,6 +22,8 @@ class MouseTracker {
     private var leftClicks: Int = 0
     private var rightClicks: Int = 0
     private var middleClicks: Int = 0
+
+    private var heatmapBuffer: [HeatmapBucketKey: Int] = [:]
 
     private var persistTimer: Timer?
     private let persistInterval: TimeInterval = 30.0
@@ -47,17 +56,12 @@ class MouseTracker {
             middleClicks += 1
         }
 
-        // Update heatmap
         let bucket = bucketForPoint(point)
         let screenId = getScreenId(for: point)
         let today = getTodayString()
 
-        DatabaseManager.shared.updateMouseHeatmap(
-            date: today,
-            screenId: screenId,
-            bucketX: bucket.x,
-            bucketY: bucket.y
-        )
+        let key = HeatmapBucketKey(date: today, screenId: screenId, bucketX: bucket.x, bucketY: bucket.y)
+        heatmapBuffer[key, default: 0] += 1
     }
 
     private func setupPersistTimer() {
@@ -79,18 +83,24 @@ class MouseTracker {
             middleClicks: middleClicks
         )
 
+        if !heatmapBuffer.isEmpty {
+            DatabaseManager.shared.batchUpdateMouseHeatmap(heatmapBuffer)
+        }
+
         // Reset all counters after persist
         let persistedDistance = accumulatedDistance
         let persistedLeft = leftClicks
         let persistedRight = rightClicks
         let persistedMiddle = middleClicks
+        let persistedHeatmapBuckets = heatmapBuffer.count
 
         accumulatedDistance = 0
         leftClicks = 0
         rightClicks = 0
         middleClicks = 0
+        heatmapBuffer.removeAll()
 
-        print("Mouse data persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle)")
+        print("Mouse data persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle), heatmap buckets:\(persistedHeatmapBuckets)")
     }
 
     func reset() {
@@ -99,6 +109,7 @@ class MouseTracker {
         rightClicks = 0
         middleClicks = 0
         lastPoint = nil
+        heatmapBuffer.removeAll()
     }
 
     func getCurrentStats() -> (distance: Double, left: Int, right: Int, middle: Int) {

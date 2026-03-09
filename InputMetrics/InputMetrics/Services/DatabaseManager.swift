@@ -190,6 +190,39 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    func batchUpdateMouseHeatmap(_ buffer: [HeatmapBucketKey: Int]) {
+        guard let db = dbQueue else { return }
+
+        dbQueue_serial.async {
+            do {
+                try db.write { db in
+                    for (key, count) in buffer {
+                        if var entry = try MouseHeatmapEntry
+                            .filter(MouseHeatmapEntry.Columns.date == key.date)
+                            .filter(MouseHeatmapEntry.Columns.screenId == key.screenId)
+                            .filter(MouseHeatmapEntry.Columns.bucketX == key.bucketX)
+                            .filter(MouseHeatmapEntry.Columns.bucketY == key.bucketY)
+                            .fetchOne(db) {
+                            entry.clickCount += count
+                            try entry.update(db)
+                        } else {
+                            let newEntry = MouseHeatmapEntry(
+                                date: key.date,
+                                screenId: key.screenId,
+                                bucketX: key.bucketX,
+                                bucketY: key.bucketY,
+                                clickCount: count
+                            )
+                            try newEntry.insert(db)
+                        }
+                    }
+                }
+            } catch {
+                print("Error batch updating mouse heatmap: \(error)")
+            }
+        }
+    }
+
     func getMouseHeatmap(date: String) -> [MouseHeatmapEntry] {
         guard let db = dbQueue else { return [] }
 
