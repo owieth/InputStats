@@ -77,14 +77,18 @@ class EventMonitor {
         print("Event monitoring stopped")
     }
 
-    private func handleEvent(type: CGEventType, event: CGEvent) {
+    nonisolated private func handleEvent(type: CGEventType, event: CGEvent) {
         // Extract all values synchronously before the callback returns,
         // since the CGEvent may be deallocated after the callback exits.
         let location = event.location
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
         let flags = event.flags
 
-        Task { @MainActor in
+        // The event tap callback runs on the main thread's run loop, so we
+        // can dispatch synchronously via assumeIsolated instead of spawning
+        // a Task per event. This eliminates Task object overhead at high
+        // event rates and guarantees FIFO processing order.
+        MainActor.assumeIsolated {
             switch type {
             case .mouseMoved:
                 MouseTracker.shared.trackMovement(to: location)
