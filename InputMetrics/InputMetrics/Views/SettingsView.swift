@@ -265,54 +265,54 @@ struct SettingsView: View {
     }
 
     private func generateCSV() -> String {
-        var csv = ""
+        var lines: [String] = []
 
-        csv += csvRow(["Date", "Mouse Distance (px)", "Left Clicks", "Right Clicks", "Middle Clicks", "Keystrokes"]) + "\n"
+        lines.append(csvRow(["Date", "Mouse Distance (px)", "Left Clicks", "Right Clicks", "Middle Clicks", "Keystrokes"]))
 
         let allSummaries = DatabaseManager.shared.getAllDailySummaries()
         for summary in allSummaries {
-            csv += csvRow([
+            lines.append(csvRow([
                 summary.date,
                 "\(summary.mouseDistancePx)",
                 "\(summary.mouseClicksLeft)",
                 "\(summary.mouseClicksRight)",
                 "\(summary.mouseClicksMiddle)",
                 "\(summary.keystrokes)"
-            ]) + "\n"
+            ]))
         }
 
-        csv += "\n"
+        lines.append("")
 
-        csv += csvRow(["Date", "Screen ID", "Bucket X", "Bucket Y", "Click Count"]) + "\n"
+        lines.append(csvRow(["Date", "Screen ID", "Bucket X", "Bucket Y", "Click Count"]))
 
         let allMouseData = DatabaseManager.shared.getAllMouseHeatmapEntries()
         for entry in allMouseData {
-            csv += csvRow([
+            lines.append(csvRow([
                 entry.date,
                 "\(entry.screenId)",
                 "\(entry.bucketX)",
                 "\(entry.bucketY)",
                 "\(entry.clickCount)"
-            ]) + "\n"
+            ]))
         }
 
-        csv += "\n"
+        lines.append("")
 
-        csv += csvRow(["Date", "Key Code", "Key Name", "Modifier Flags", "Count"]) + "\n"
+        lines.append(csvRow(["Date", "Key Code", "Key Name", "Modifier Flags", "Count"]))
 
         let allKeyboardData = DatabaseManager.shared.getAllKeyboardEntries()
         for entry in allKeyboardData {
             let keyName = KeyCodeMapping.keyName(for: entry.keyCode)
-            csv += csvRow([
+            lines.append(csvRow([
                 entry.date,
                 "\(entry.keyCode)",
                 keyName,
                 "\(entry.modifierFlags)",
                 "\(entry.count)"
-            ]) + "\n"
+            ]))
         }
 
-        return csv
+        return lines.joined(separator: "\n") + "\n"
     }
 
     private func resetData() {
