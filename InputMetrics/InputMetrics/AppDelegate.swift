@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
@@ -53,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("InputMetrics launched successfully")
     }
 
-    @MainActor @objc private func statusItemClicked() {
+    @objc private func statusItemClicked() {
         guard let event = NSApp.currentEvent else { return }
         guard let button = statusItem?.button else { return }
 
@@ -80,11 +81,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @MainActor @objc private func openSettings() {
+    @objc private func openSettings() {
         WindowManager.shared.openSettingsWindow()
     }
 
-    @MainActor @objc private func quitApp() {
+    @objc private func quitApp() {
         NSApp.terminate(nil)
     }
 
@@ -109,7 +110,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @MainActor private func updateLiveStats() {
+    private func updateLiveStats() {
         guard let button = statusItem?.button else { return }
         guard UserPreferences.shared.showLiveStats else {
             button.title = ""
@@ -139,7 +140,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         button.title = " \(distanceText) · \(keystrokesText)"
     }
 
-    @MainActor private func formatDistance(_ meters: Double) -> String {
+    private func formatDistance(_ meters: Double) -> String {
         if UserPreferences.shared.distanceUnit == .imperial {
             let feet = meters / Constants.metersPerFoot
             if feet >= Constants.feetPerMile {
