@@ -37,7 +37,8 @@ class EventMonitor {
                        (1 << CGEventType.leftMouseDown.rawValue) |
                        (1 << CGEventType.rightMouseDown.rawValue) |
                        (1 << CGEventType.otherMouseDown.rawValue) |
-                       (1 << CGEventType.keyDown.rawValue)
+                       (1 << CGEventType.keyDown.rawValue) |
+                       (1 << CGEventType.scrollWheel.rawValue)
 
         guard let eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -83,6 +84,8 @@ class EventMonitor {
         let location = event.location
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
         let flags = event.flags
+        let scrollDeltaY = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis1)
+        let scrollDeltaX = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis2)
 
         // The event tap callback runs on the main thread's run loop, so we
         // can dispatch synchronously via assumeIsolated instead of spawning
@@ -104,6 +107,9 @@ class EventMonitor {
 
             case .keyDown:
                 KeyboardTracker.shared.trackKeystroke(keyCode: keyCode, modifierFlags: flags)
+
+            case .scrollWheel:
+                MouseTracker.shared.trackScroll(deltaX: scrollDeltaX, deltaY: scrollDeltaY)
 
             default:
                 break

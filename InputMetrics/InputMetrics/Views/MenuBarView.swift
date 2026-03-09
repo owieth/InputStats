@@ -13,9 +13,13 @@ struct MenuBarView: View {
     @State private var chartData: [DailySummary] = []
     @State private var heatmapData: [[Int]] = []
     @State private var keyboardEntries: [KeyboardEntry] = []
+    @State private var scrollVertical: Double = 0
+    @State private var scrollHorizontal: Double = 0
     @State private var allTimeDistance: Double = 0
     @State private var allTimeClicks: Int = 0
     @State private var allTimeKeystrokes: Int = 0
+    @State private var allTimeScrollVertical: Double = 0
+    @State private var allTimeScrollHorizontal: Double = 0
     @State private var cachedTotals: DatabaseManager.AllTimeTotals = .zero
     @State private var lastCacheTime: Date = .distantPast
 
@@ -88,7 +92,7 @@ struct MenuBarView: View {
 
     private var mouseMetricsView: some View {
         VStack(spacing: 16) {
-            // Distance and Clicks Cards - equal width grid
+            // Distance, Clicks, and Scroll Cards
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 // Distance Card
                 VStack(alignment: .leading, spacing: 8) {
@@ -118,6 +122,30 @@ struct MenuBarView: View {
                         .font(.title.bold())
 
                     Text("Clicks")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.secondary.opacity(0.1))
+                .cornerRadius(12)
+
+                // Scroll Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(systemName: "scroll")
+                        .font(.title2)
+                        .foregroundStyle(.orange)
+
+                    let totalScroll = scrollVertical + scrollHorizontal
+                    if totalScroll < 1000 {
+                        Text(String(format: "%.0f px", totalScroll))
+                            .font(.title.bold())
+                    } else {
+                        Text(String(format: "%.1f K", totalScroll / 1000))
+                            .font(.title.bold())
+                    }
+
+                    Text("Scroll")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -311,6 +339,26 @@ struct MenuBarView: View {
                 .padding()
                 .background(Color.purple.opacity(0.1))
                 .cornerRadius(12)
+
+                // Total Scroll
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Scroll", systemImage: "scroll")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    let totalScroll = allTimeScrollVertical + allTimeScrollHorizontal
+                    if totalScroll < 1000 {
+                        Text(String(format: "%.0f px", totalScroll))
+                            .font(.title2.bold().monospacedDigit())
+                    } else {
+                        Text(String(format: "%.1f K px", totalScroll / 1000))
+                            .font(.title2.bold().monospacedDigit())
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(12)
             }
             .padding(.horizontal)
         }
@@ -327,12 +375,16 @@ struct MenuBarView: View {
             leftClicks = summary.mouseClicksLeft + mouseStats.left
             rightClicks = summary.mouseClicksRight + mouseStats.right
             middleClicks = summary.mouseClicksMiddle + mouseStats.middle
+            scrollVertical = summary.scrollDistanceVertical + mouseStats.scrollV
+            scrollHorizontal = summary.scrollDistanceHorizontal + mouseStats.scrollH
         } else {
             mouseDistance = mouseStats.distance
             keystrokes = keyboardStats
             leftClicks = mouseStats.left
             rightClicks = mouseStats.right
             middleClicks = mouseStats.middle
+            scrollVertical = mouseStats.scrollV
+            scrollHorizontal = mouseStats.scrollH
         }
     }
 
@@ -385,6 +437,8 @@ struct MenuBarView: View {
         allTimeDistance = cachedTotals.distance + mouseStats.distance
         allTimeClicks = cachedTotals.totalClicks + mouseStats.left + mouseStats.right + mouseStats.middle
         allTimeKeystrokes = cachedTotals.keystrokes + KeyboardTracker.shared.getCurrentKeystrokes()
+        allTimeScrollVertical = cachedTotals.scrollVertical + mouseStats.scrollV
+        allTimeScrollHorizontal = cachedTotals.scrollHorizontal + mouseStats.scrollH
     }
 
     private func chartDistance(_ pixels: Double) -> Double {

@@ -22,6 +22,8 @@ class MouseTracker {
     private var leftClicks: Int = 0
     private var rightClicks: Int = 0
     private var middleClicks: Int = 0
+    private var scrollVertical: Double = 0
+    private var scrollHorizontal: Double = 0
 
     private var heatmapBuffer: [HeatmapBucketKey: Int] = [:]
 
@@ -124,6 +126,11 @@ class MouseTracker {
         heatmapBuffer[key, default: 0] += 1
     }
 
+    func trackScroll(deltaX: Double, deltaY: Double) {
+        scrollVertical += abs(deltaY)
+        scrollHorizontal += abs(deltaX)
+    }
+
     private func setupPersistTimer() {
         persistTimer = Timer.scheduledTimer(withTimeInterval: persistInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
@@ -141,7 +148,9 @@ class MouseTracker {
             mouseDistance: accumulatedDistance,
             leftClicks: leftClicks,
             rightClicks: rightClicks,
-            middleClicks: middleClicks
+            middleClicks: middleClicks,
+            scrollVertical: scrollVertical,
+            scrollHorizontal: scrollHorizontal
         )
 
         DatabaseManager.shared.updateHourlySummary(
@@ -160,15 +169,19 @@ class MouseTracker {
         let persistedLeft = leftClicks
         let persistedRight = rightClicks
         let persistedMiddle = middleClicks
+        let persistedScrollV = scrollVertical
+        let persistedScrollH = scrollHorizontal
         let persistedHeatmapBuckets = heatmapBuffer.count
 
         accumulatedDistance = 0
         leftClicks = 0
         rightClicks = 0
         middleClicks = 0
+        scrollVertical = 0
+        scrollHorizontal = 0
         heatmapBuffer.removeAll()
 
-        print("Mouse data persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle), heatmap buckets:\(persistedHeatmapBuckets)")
+        print("Mouse data persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle) SV:\(persistedScrollV) SH:\(persistedScrollH), heatmap buckets:\(persistedHeatmapBuckets)")
     }
 
     func reset() {
@@ -176,12 +189,14 @@ class MouseTracker {
         leftClicks = 0
         rightClicks = 0
         middleClicks = 0
+        scrollVertical = 0
+        scrollHorizontal = 0
         lastPoint = nil
         heatmapBuffer.removeAll()
     }
 
-    func getCurrentStats() -> (distance: Double, left: Int, right: Int, middle: Int) {
-        return (accumulatedDistance, leftClicks, rightClicks, middleClicks)
+    func getCurrentStats() -> (distance: Double, left: Int, right: Int, middle: Int, scrollV: Double, scrollH: Double) {
+        return (accumulatedDistance, leftClicks, rightClicks, middleClicks, scrollVertical, scrollHorizontal)
     }
 
     private func bucketForPoint(_ point: CGPoint) -> (x: Int, y: Int) {

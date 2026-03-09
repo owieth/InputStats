@@ -10,6 +10,8 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
     var mouseClicksRight: Int
     var mouseClicksMiddle: Int
     var keystrokes: Int
+    var scrollDistanceVertical: Double
+    var scrollDistanceHorizontal: Double
 
     enum CodingKeys: String, CodingKey {
         case date
@@ -18,6 +20,8 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
         case mouseClicksRight = "mouse_clicks_right"
         case mouseClicksMiddle = "mouse_clicks_middle"
         case keystrokes
+        case scrollDistanceVertical = "scroll_distance_vertical"
+        case scrollDistanceHorizontal = "scroll_distance_horizontal"
     }
 
     enum Columns {
@@ -27,5 +31,7 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
         static let mouseClicksRight = Column(CodingKeys.mouseClicksRight)
         static let mouseClicksMiddle = Column(CodingKeys.mouseClicksMiddle)
         static let keystrokes = Column(CodingKeys.keystrokes)
+        static let scrollDistanceVertical = Column(CodingKeys.scrollDistanceVertical)
+        static let scrollDistanceHorizontal = Column(CodingKeys.scrollDistanceHorizontal)
     }
 }

@@ -54,6 +54,7 @@ struct MouseStatsView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Distance: \(DistanceConverter.formatDistance(stats.mouseDistancePx))")
                             Text("Clicks: \(stats.mouseClicksLeft + stats.mouseClicksRight + stats.mouseClicksMiddle)")
+                            Text("Scroll: \(formatScrollDistance(vertical: stats.scrollDistanceVertical, horizontal: stats.scrollDistanceHorizontal))")
                             Text("Keystrokes: \(stats.keystrokes)")
 
                             Divider()
@@ -101,6 +102,15 @@ struct MouseStatsView: View {
         chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
     }
 
+    private func formatScrollDistance(vertical: Double, horizontal: Double) -> String {
+        let total = vertical + horizontal
+        if total < 1000 {
+            return String(format: "%.0f px", total)
+        } else {
+            return String(format: "%.1f K px", total / 1000)
+        }
+    }
+
     private func loadAllTimeStats() {
         let totals = DatabaseManager.shared.getAllTimeTotals()
 
@@ -110,7 +120,9 @@ struct MouseStatsView: View {
             mouseClicksLeft: totals.clicksLeft,
             mouseClicksRight: totals.clicksRight,
             mouseClicksMiddle: totals.clicksMiddle,
-            keystrokes: totals.keystrokes
+            keystrokes: totals.keystrokes,
+            scrollDistanceVertical: totals.scrollVertical,
+            scrollDistanceHorizontal: totals.scrollHorizontal
         )
     }
 }

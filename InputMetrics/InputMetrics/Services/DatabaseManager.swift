@@ -51,6 +51,7 @@ final class DatabaseManager: @unchecked Sendable {
         registerV2Migration(&migrator)
         registerV3Migration(&migrator)
         registerV4Migration(&migrator)
+        registerV5Migration(&migrator)
 
         return migrator
     }
@@ -108,6 +109,15 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    private func registerV5Migration(_ migrator: inout DatabaseMigrator) {
+        migrator.registerMigration("v5") { db in
+            try db.alter(table: "daily_summary") { t in
+                t.add(column: "scroll_distance_vertical", .double).defaults(to: 0)
+                t.add(column: "scroll_distance_horizontal", .double).defaults(to: 0)
+            }
+        }
+    }
+
     // MARK: - Daily Summary Operations
 
     func updateDailySummary(
@@ -116,7 +126,9 @@ final class DatabaseManager: @unchecked Sendable {
         leftClicks: Int = 0,
         rightClicks: Int = 0,
         middleClicks: Int = 0,
-        keystrokes: Int = 0
+        keystrokes: Int = 0,
+        scrollVertical: Double = 0,
+        scrollHorizontal: Double = 0
     ) {
         guard let db = dbQueue else { return }
 
@@ -125,16 +137,18 @@ final class DatabaseManager: @unchecked Sendable {
                 try db.write { db in
                     try db.execute(
                         sql: """
-                            INSERT INTO daily_summary (date, mouse_distance_px, mouse_clicks_left, mouse_clicks_right, mouse_clicks_middle, keystrokes)
-                            VALUES (?, ?, ?, ?, ?, ?)
+                            INSERT INTO daily_summary (date, mouse_distance_px, mouse_clicks_left, mouse_clicks_right, mouse_clicks_middle, keystrokes, scroll_distance_vertical, scroll_distance_horizontal)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(date) DO UPDATE SET
                                 mouse_distance_px = mouse_distance_px + excluded.mouse_distance_px,
                                 mouse_clicks_left = mouse_clicks_left + excluded.mouse_clicks_left,
                                 mouse_clicks_right = mouse_clicks_right + excluded.mouse_clicks_right,
                                 mouse_clicks_middle = mouse_clicks_middle + excluded.mouse_clicks_middle,
-                                keystrokes = keystrokes + excluded.keystrokes
+                                keystrokes = keystrokes + excluded.keystrokes,
+                                scroll_distance_vertical = scroll_distance_vertical + excluded.scroll_distance_vertical,
+                                scroll_distance_horizontal = scroll_distance_horizontal + excluded.scroll_distance_horizontal
                             """,
-                        arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes]
+                        arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes, scrollVertical, scrollHorizontal]
                     )
                 }
             } catch {
@@ -415,8 +429,10 @@ final class DatabaseManager: @unchecked Sendable {
         var clicksRight: Int
         var clicksMiddle: Int
         var keystrokes: Int
+        var scrollVertical: Double
+        var scrollHorizontal: Double
 
-        static let zero = AllTimeTotals(distance: 0, clicksLeft: 0, clicksRight: 0, clicksMiddle: 0, keystrokes: 0)
+        static let zero = AllTimeTotals(distance: 0, clicksLeft: 0, clicksRight: 0, clicksMiddle: 0, keystrokes: 0, scrollVertical: 0, scrollHorizontal: 0)
 
         var totalClicks: Int { clicksLeft + clicksRight + clicksMiddle }
     }
@@ -432,7 +448,9 @@ final class DatabaseManager: @unchecked Sendable {
                         COALESCE(SUM(mouse_clicks_left), 0) AS clicks_left,
                         COALESCE(SUM(mouse_clicks_right), 0) AS clicks_right,
                         COALESCE(SUM(mouse_clicks_middle), 0) AS clicks_middle,
-                        COALESCE(SUM(keystrokes), 0) AS keystrokes
+                        COALESCE(SUM(keystrokes), 0) AS keystrokes,
+                        COALESCE(SUM(scroll_distance_vertical), 0) AS scroll_vertical,
+                        COALESCE(SUM(scroll_distance_horizontal), 0) AS scroll_horizontal
                     FROM daily_summary
                     """)
                 guard let row else { return .zero }
@@ -441,7 +459,9 @@ final class DatabaseManager: @unchecked Sendable {
                     clicksLeft: row["clicks_left"],
                     clicksRight: row["clicks_right"],
                     clicksMiddle: row["clicks_middle"],
-                    keystrokes: row["keystrokes"]
+                    keystrokes: row["keystrokes"],
+                    scrollVertical: row["scroll_vertical"],
+                    scrollHorizontal: row["scroll_horizontal"]
                 )
             }
         } catch {

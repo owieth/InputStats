@@ -89,9 +89,9 @@ struct ChartView: View {
 #Preview {
     ChartView(
         data: [
-            DailySummary(date: "2025-01-10", mouseDistancePx: 5000000, mouseClicksLeft: 100, mouseClicksRight: 20, mouseClicksMiddle: 5, keystrokes: 2000),
-            DailySummary(date: "2025-01-11", mouseDistancePx: 7000000, mouseClicksLeft: 150, mouseClicksRight: 30, mouseClicksMiddle: 8, keystrokes: 3000),
-            DailySummary(date: "2025-01-12", mouseDistancePx: 4000000, mouseClicksLeft: 80, mouseClicksRight: 15, mouseClicksMiddle: 3, keystrokes: 1500)
+            DailySummary(date: "2025-01-10", mouseDistancePx: 5000000, mouseClicksLeft: 100, mouseClicksRight: 20, mouseClicksMiddle: 5, keystrokes: 2000, scrollDistanceVertical: 0, scrollDistanceHorizontal: 0),
+            DailySummary(date: "2025-01-11", mouseDistancePx: 7000000, mouseClicksLeft: 150, mouseClicksRight: 30, mouseClicksMiddle: 8, keystrokes: 3000, scrollDistanceVertical: 0, scrollDistanceHorizontal: 0),
+            DailySummary(date: "2025-01-12", mouseDistancePx: 4000000, mouseClicksLeft: 80, mouseClicksRight: 15, mouseClicksMiddle: 3, keystrokes: 1500, scrollDistanceVertical: 0, scrollDistanceHorizontal: 0)
         ],
         range: .week
     )
