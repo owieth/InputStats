@@ -25,17 +25,12 @@ struct ChartView: View {
             } else {
                 Chart(data, id: \.date) { item in
                     BarMark(
-                        x: .value("Date", item.date),
+                        x: .value("Date", formatLabel(from: item.date)),
                         y: .value("Value", metricValue(for: item))
                     )
                     .foregroundStyle(Color.blue)
                 }
                 .chartYAxisLabel(yAxisLabel)
-                .chartXAxis {
-                    AxisMarks(values: .automatic) { value in
-                        AxisValueLabel(format: xAxisFormat)
-                    }
-                }
             }
         }
     }
@@ -58,15 +53,22 @@ struct ChartView: View {
         }
     }
 
-    private var xAxisFormat: Date.FormatStyle {
+    private func formatLabel(from dateString: String) -> String {
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.dateFormat = "yyyy-MM-dd"
+        guard let date = parser.date(from: dateString) else { return dateString }
+
+        let display = DateFormatter()
         switch range {
         case .week:
-            return .dateTime.weekday(.abbreviated)
+            display.dateFormat = "EEE"
         case .month:
-            return .dateTime.day()
+            display.dateFormat = "d"
         case .year:
-            return .dateTime.month().day()
+            display.dateFormat = "MMM d"
         }
+        return display.string(from: date)
     }
 
     private func metricValue(for item: DailySummary) -> Double {
