@@ -98,9 +98,12 @@ class MouseTracker {
     }
 
     private func bucketForPoint(_ point: CGPoint) -> (x: Int, y: Int) {
-        // Get all screens and calculate combined bounds
         let screens = NSScreen.screens
         guard !screens.isEmpty else { return (0, 0) }
+
+        // Convert CG Y (origin bottom-left) to AppKit Y (origin top-left)
+        let primaryHeight = NSScreen.screens[0].frame.height
+        let appKitY = primaryHeight - point.y
 
         var minX = CGFloat.infinity
         var minY = CGFloat.infinity
@@ -120,7 +123,7 @@ class MouseTracker {
 
         // Normalize to 50x50 grid
         let normalizedX = (point.x - minX) / width
-        let normalizedY = (point.y - minY) / height
+        let normalizedY = (appKitY - minY) / height
         let bucketX = min(49, max(0, Int(normalizedX * 50)))
         let bucketY = min(49, max(0, Int(normalizedY * 50)))
 
