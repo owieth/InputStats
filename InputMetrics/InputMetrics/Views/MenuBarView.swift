@@ -390,7 +390,7 @@ struct MenuBarView: View {
         var grid = Array(repeating: Array(repeating: 0, count: 50), count: 50)
 
         for entry in entries {
-            guard entry.bucketX < 50 && entry.bucketY < 50 else { continue }
+            guard entry.bucketX >= 0 && entry.bucketY >= 0 && entry.bucketX < 50 && entry.bucketY < 50 else { continue }
             grid[entry.bucketY][entry.bucketX] += entry.clickCount
         }
 

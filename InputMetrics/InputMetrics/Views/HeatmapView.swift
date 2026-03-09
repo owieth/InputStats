@@ -53,7 +53,7 @@ struct HeatmapView: View {
 
         // Fill in the click counts
         for entry in entries {
-            guard entry.bucketX < Constants.heatmapGridSize && entry.bucketY < Constants.heatmapGridSize else { continue }
+            guard entry.bucketX >= 0 && entry.bucketY >= 0 && entry.bucketX < Constants.heatmapGridSize && entry.bucketY < Constants.heatmapGridSize else { continue }
             grid[entry.bucketY][entry.bucketX] += entry.clickCount
         }
 
