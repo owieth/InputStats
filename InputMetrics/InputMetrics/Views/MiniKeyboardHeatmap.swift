@@ -75,7 +75,7 @@ struct KeyCapView: View {
             }
         }
         .frame(width: 28 * width, height: 28)
-        .background(colorForIntensity(intensity))
+        .background(HeatmapColor.forKeyboardIntensity(intensity))
         .cornerRadius(4)
         .overlay(
             RoundedRectangle(cornerRadius: 4)
@@ -83,19 +83,4 @@ struct KeyCapView: View {
         )
     }
 
-    private func colorForIntensity(_ intensity: Double) -> Color {
-        if intensity == 0 {
-            return Color.gray.opacity(0.15)
-        } else if intensity < 0.2 {
-            return Color.purple.opacity(0.25)
-        } else if intensity < 0.4 {
-            return Color.purple.opacity(0.45)
-        } else if intensity < 0.6 {
-            return Color.purple.opacity(0.65)
-        } else if intensity < 0.8 {
-            return Color.purple.opacity(0.8)
-        } else {
-            return Color.purple
-        }
-    }
 }

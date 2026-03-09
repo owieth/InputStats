@@ -24,7 +24,7 @@ struct HeatmapCanvas: View {
                         height: cellHeight
                     )
 
-                    let color = colorForIntensity(intensity)
+                    let color = HeatmapColor.forIntensity(intensity)
                     context.fill(Path(rect), with: .color(color))
                 }
             }
@@ -35,19 +35,4 @@ struct HeatmapCanvas: View {
         .cornerRadius(8)
     }
 
-    private func colorForIntensity(_ intensity: Double) -> Color {
-        if intensity == 0 {
-            return Color.clear
-        } else if intensity < 0.2 {
-            return Color.blue.opacity(0.3)
-        } else if intensity < 0.4 {
-            return Color.cyan.opacity(0.5)
-        } else if intensity < 0.6 {
-            return Color.green.opacity(0.7)
-        } else if intensity < 0.8 {
-            return Color.yellow.opacity(0.8)
-        } else {
-            return Color.red.opacity(0.9)
-        }
-    }
 }

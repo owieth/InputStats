@@ -43,7 +43,7 @@ struct HeatmapView: View {
                             height: cellHeight
                         )
 
-                        let color = colorForIntensity(intensity)
+                        let color = HeatmapColor.forIntensity(intensity)
                         context.fill(
                             Path(roundedRect: rect, cornerRadius: 0),
                             with: .color(color)
@@ -63,46 +63,14 @@ struct HeatmapView: View {
     }
 
     private func loadScreenIds() {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
-
+        let today = DateHelper.todayString()
         screenIds = DatabaseManager.shared.getDistinctScreenIds(date: today)
     }
 
     private func loadHeatmapData() {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
-
+        let today = DateHelper.todayString()
         let entries = DatabaseManager.shared.getMouseHeatmap(date: today, screenId: selectedScreenId)
-
-        var grid = Array(repeating: Array(repeating: 0, count: Constants.heatmapGridSize), count: Constants.heatmapGridSize)
-
-        for entry in entries {
-            guard entry.bucketX >= 0 && entry.bucketY >= 0 && entry.bucketX < Constants.heatmapGridSize && entry.bucketY < Constants.heatmapGridSize else { continue }
-            grid[entry.bucketY][entry.bucketX] += entry.clickCount
-        }
-
-        heatmapData = grid
-    }
-
-    private func colorForIntensity(_ intensity: Double) -> Color {
-        if intensity == 0 {
-            return Color.clear
-        } else if intensity < 0.2 {
-            return Color.blue.opacity(0.3)
-        } else if intensity < 0.4 {
-            return Color.cyan.opacity(0.5)
-        } else if intensity < 0.6 {
-            return Color.green.opacity(0.7)
-        } else if intensity < 0.8 {
-            return Color.yellow.opacity(0.8)
-        } else {
-            return Color.red.opacity(0.9)
-        }
+        heatmapData = HeatmapGridBuilder.buildGrid(from: entries)
     }
 }
 

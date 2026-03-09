@@ -120,7 +120,7 @@ class MouseTracker {
 
         let bucket = bucketForPoint(point)
         let screenId = getScreenId(for: point)
-        let today = getTodayString()
+        let today = DateHelper.todayString()
 
         let key = HeatmapBucketKey(date: today, screenId: screenId, bucketX: bucket.x, bucketY: bucket.y)
         heatmapBuffer[key, default: 0] += 1
@@ -140,7 +140,7 @@ class MouseTracker {
     }
 
     func persistData() {
-        let today = getTodayString()
+        let today = DateHelper.todayString()
         let currentHour = getCurrentHour()
 
         DatabaseManager.shared.updateDailySummary(
@@ -223,13 +223,6 @@ class MouseTracker {
             }
         }
         return "primary"
-    }
-
-    private func getTodayString() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
 
     private func getCurrentHour() -> Int {

@@ -368,7 +368,7 @@ struct MenuBarView: View {
         let mouseStats = MouseTracker.shared.getCurrentStats()
         let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
 
-        let today = getTodayString()
+        let today = DateHelper.todayString()
         if let summary = DatabaseManager.shared.getDailySummary(date: today) {
             mouseDistance = summary.mouseDistancePx + mouseStats.distance
             keystrokes = summary.keystrokes + keyboardStats
@@ -391,34 +391,23 @@ struct MenuBarView: View {
     private func loadChartData() {
         let calendar = Calendar.current
         let today = Date()
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
 
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: today) else { return }
 
-        let startString = formatter.string(from: startDate)
-        let endString = formatter.string(from: today)
+        let startString = DateHelper.string(from: startDate)
+        let endString = DateHelper.string(from: today)
 
         chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
     }
 
     private func loadHeatmapData() {
-        let today = getTodayString()
+        let today = DateHelper.todayString()
         let entries = DatabaseManager.shared.getMouseHeatmap(date: today)
-
-        var grid = Array(repeating: Array(repeating: 0, count: 50), count: 50)
-
-        for entry in entries {
-            guard entry.bucketX >= 0 && entry.bucketY >= 0 && entry.bucketX < 50 && entry.bucketY < 50 else { continue }
-            grid[entry.bucketY][entry.bucketX] += entry.clickCount
-        }
-
-        heatmapData = grid
+        heatmapData = HeatmapGridBuilder.buildGrid(from: entries)
     }
 
     private func loadKeyboardData() {
-        let today = getTodayString()
+        let today = DateHelper.todayString()
         keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: today)
     }
 
@@ -452,20 +441,12 @@ struct MenuBarView: View {
     }
 
     private func shortDay(from dateString: String) -> String {
+        guard let date = DateHelper.date(from: dateString) else { return "" }
+
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        guard let date = formatter.date(from: dateString) else { return "" }
-
         formatter.dateFormat = "EEE"
         return formatter.string(from: date)
-    }
-
-    private func getTodayString() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
     }
 }
 
