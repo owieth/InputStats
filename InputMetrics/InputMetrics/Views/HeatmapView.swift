@@ -3,15 +3,16 @@ import SwiftUI
 struct HeatmapView: View {
     @State private var heatmapData: [[Int]] = []
 
+    private var maxValue: Int {
+        heatmapData.flatMap { $0 }.max() ?? 1
+    }
+
     var body: some View {
         Canvas { context, size in
             let cellWidth = size.width / CGFloat(Constants.heatmapGridSize)
             let cellHeight = size.height / CGFloat(Constants.heatmapGridSize)
 
             guard !heatmapData.isEmpty else { return }
-
-            // Find max value for normalization
-            let maxValue = heatmapData.flatMap { $0 }.max() ?? 1
 
             for y in 0..<Constants.heatmapGridSize {
                 for x in 0..<Constants.heatmapGridSize {

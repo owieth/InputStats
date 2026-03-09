@@ -458,12 +458,14 @@ struct MenuBarView: View {
 struct HeatmapCanvas: View {
     let data: [[Int]]
 
+    private var maxValue: Int {
+        data.flatMap { $0 }.max() ?? 1
+    }
+
     var body: some View {
         Canvas { context, size in
             let cellWidth = size.width / 50
             let cellHeight = size.height / 50
-
-            let maxValue = data.flatMap { $0 }.max() ?? 1
 
             for y in 0..<50 {
                 for x in 0..<50 {
