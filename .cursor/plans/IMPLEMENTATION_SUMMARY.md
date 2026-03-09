@@ -20,7 +20,6 @@ InputStats/
 │       │   ├── DailySummary.swift        # Daily aggregate model (GRDB)
 │       │   ├── MouseHeatmapEntry.swift   # 50×50 heatmap buckets
 │       │   ├── KeyboardEntry.swift       # Per-key counts
-│       │   └── HourlySummary.swift       # Hourly breakdown
 │       │
 │       ├── Services/
 │       │   ├── DatabaseManager.swift     # GRDB setup, migrations, queries
@@ -53,7 +52,7 @@ InputStats/
 ## Core Features Implemented
 
 ### 1. Database (GRDB.swift)
-- **4 tables**: `daily_summary`, `mouse_heatmap`, `keyboard_heatmap`, `hourly_summary`
+- **3 tables**: `daily_summary`, `mouse_heatmap`, `keyboard_heatmap`
 - **Migrations**: Automatic schema versioning
 - **Indexes**: Optimized date queries
 - **CRUD methods**: Type-safe Swift models
@@ -160,8 +159,7 @@ Both fetched via Swift Package Manager.
 3. **Full CSV export**: Export all historical data, not just today
 4. **Persist unit preference**: Save to UserDefaults
 5. **App icon**: Design custom icon (currently uses SF Symbol)
-6. **Hourly charts**: Implement hourly_summary queries
-7. **Performance**: Profile and optimize for long-running stability
+6. **Performance**: Profile and optimize for long-running stability
 
 ## Testing Checklist
 

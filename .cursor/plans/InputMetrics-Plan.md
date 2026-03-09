@@ -59,7 +59,6 @@ InputMetrics/
 │   ├── DailySummary.swift         # Daily aggregate model
 │   ├── MouseHeatmapEntry.swift    # Heatmap bucket model
 │   ├── KeyboardEntry.swift        # Per-key count model
-│   └── HourlySummary.swift        # Hourly breakdown model
 │
 ├── Services/
 │   ├── EventMonitor.swift         # CGEventTap wrapper for mouse/keyboard
@@ -119,19 +118,8 @@ CREATE TABLE keyboard_heatmap (
     PRIMARY KEY (date, key_code, modifier_flags)
 );
 
--- Hourly breakdown (enables time-of-day analysis)
-CREATE TABLE hourly_summary (
-    date TEXT,
-    hour INTEGER,                       -- 0-23
-    mouse_distance_px REAL DEFAULT 0,
-    mouse_clicks INTEGER DEFAULT 0,
-    keystrokes INTEGER DEFAULT 0,
-    PRIMARY KEY (date, hour)
-);
-
 -- Indexes for chart queries
 CREATE INDEX idx_daily_date ON daily_summary(date);
-CREATE INDEX idx_hourly_date ON hourly_summary(date);
 ```
 
 ### Chart Aggregation Strategy

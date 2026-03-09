@@ -69,7 +69,6 @@ Schema includes:
 - `daily_summary` - Daily aggregated metrics
 - `mouse_heatmap` - 50×50 bucketed click locations
 - `keyboard_heatmap` - Per-key counts with modifiers
-- `hourly_summary` - Hourly breakdowns
 
 ## Development Notes
 
