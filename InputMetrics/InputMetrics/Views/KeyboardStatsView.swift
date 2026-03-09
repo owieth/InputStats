@@ -2,35 +2,33 @@ import SwiftUI
 import Charts
 
 struct KeyboardStatsView: View {
-    @State private var selectedRange: TimeRange = .week
-    @State private var chartData: [DailySummary] = []
-    @State private var keyboardEntries: [KeyboardEntry] = []
+    @State private var viewModel = KeyboardStatsViewModel()
 
     var body: some View {
         VStack(spacing: 20) {
             // Time range selector
             HStack {
                 Spacer()
-                Picker("Range", selection: $selectedRange) {
+                Picker("Range", selection: $viewModel.selectedRange) {
                     Text("Week").tag(TimeRange.week)
                     Text("Month").tag(TimeRange.month)
                     Text("Year").tag(TimeRange.year)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 250)
-                .onChange(of: selectedRange) { _, _ in
-                    loadChartData()
+                .onChange(of: viewModel.selectedRange) { _, _ in
+                    viewModel.onRangeChanged()
                 }
             }
             .padding(.horizontal)
 
             // Chart
-            ChartView(data: chartData, range: selectedRange, metric: .keystrokes)
+            ChartView(data: viewModel.chartData, range: viewModel.selectedRange, metric: .keystrokes)
                 .frame(height: 250)
                 .padding()
 
             // Keyboard heatmap
-            KeyboardHeatmapView(entries: keyboardEntries)
+            KeyboardHeatmapView(entries: viewModel.keyboardEntries)
                 .padding()
 
             // Top keys
@@ -39,7 +37,7 @@ struct KeyboardStatsView: View {
                     .font(.headline)
 
                 HStack(spacing: 12) {
-                    ForEach(topKeys(), id: \.id) { entry in
+                    ForEach(viewModel.topKeys, id: \.id) { entry in
                         Text("\(entry.name) (\(entry.count))")
                             .font(.caption)
                             .padding(.horizontal, 8)
@@ -52,45 +50,8 @@ struct KeyboardStatsView: View {
             .padding()
         }
         .onAppear {
-            loadChartData()
-            loadKeyboardData()
+            viewModel.loadAll()
         }
-    }
-
-    private func loadChartData() {
-        let calendar = Calendar.current
-        let today = Date()
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-
-        let daysBack: Int
-        switch selectedRange {
-        case .week: daysBack = 7
-        case .month: daysBack = 30
-        case .year: daysBack = 365
-        }
-
-        guard let startDate = calendar.date(byAdding: .day, value: -daysBack, to: today) else { return }
-
-        let startString = formatter.string(from: startDate)
-        let endString = formatter.string(from: today)
-
-        chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
-    }
-
-    private func loadKeyboardData() {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
-
-        keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: today)
-    }
-
-    private func topKeys() -> [(id: String, name: String, count: Int)] {
-        let sorted = keyboardEntries.sorted { $0.count > $1.count }
-        return Array(sorted.prefix(5)).map { ($0.compositeId, KeyCodeMapping.keyName(for: $0.keyCode), $0.count) }
     }
 }
 
