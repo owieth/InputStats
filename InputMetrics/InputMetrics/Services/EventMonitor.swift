@@ -44,6 +44,10 @@ class EventMonitor {
             options: .listenOnly,
             eventsOfInterest: CGEventMask(eventMask),
             callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
+                if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+                    CGEvent.tapEnable(tap: proxy, enable: true)
+                    return Unmanaged.passUnretained(event)
+                }
                 EventMonitor.shared.handleEvent(type: type, event: event)
                 return Unmanaged.passUnretained(event)
             },
