@@ -10,6 +10,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Initialize database
         _ = DatabaseManager.shared
 
+        if !DatabaseManager.shared.isReady {
+            let alert = NSAlert()
+            alert.messageText = "Database Error"
+            alert.informativeText = DatabaseManager.shared.initializationError
+                ?? "Failed to initialize the database."
+            alert.alertStyle = .critical
+            alert.addButton(withTitle: "Quit")
+            alert.runModal()
+            NSApp.terminate(nil)
+            return
+        }
+
         // Create menu bar icon
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 

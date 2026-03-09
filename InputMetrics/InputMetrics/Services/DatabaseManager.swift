@@ -6,6 +6,9 @@ final class DatabaseManager: @unchecked Sendable {
 
     private var dbQueue: DatabaseQueue?
     private let dbQueue_serial = DispatchQueue(label: "com.inputmetrics.database", qos: .userInitiated)
+    private(set) var initializationError: String?
+
+    var isReady: Bool { dbQueue != nil }
 
     private init() {
         setupDatabase()
@@ -32,6 +35,7 @@ final class DatabaseManager: @unchecked Sendable {
 
             print("Database initialized successfully")
         } catch {
+            initializationError = "Database setup failed: \(error.localizedDescription)"
             print("Database setup error: \(error)")
         }
     }

@@ -1,11 +1,36 @@
 import SwiftUI
 import LaunchAtLogin
 
+enum ExportResult {
+    case success(String)
+    case failure(String)
+
+    var message: String {
+        switch self {
+        case .success(let msg), .failure(let msg): return msg
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .success: return "checkmark.circle.fill"
+        case .failure: return "exclamationmark.triangle.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .success: return .green
+        case .failure: return .red
+        }
+    }
+}
+
 struct SettingsView: View {
     @ObservedObject private var preferences = UserPreferences.shared
     @State private var showResetConfirmation = false
-    @State private var exportMessage: String?
-    @State private var showExportSuccess = false
+    @State private var exportResult: ExportResult?
+    @State private var showExportToast = false
 
     var body: some View {
         ZStack {
@@ -162,16 +187,15 @@ struct SettingsView: View {
                 .padding(.horizontal, 32)
             }
 
-            // Success notification
-            if showExportSuccess, let message = exportMessage {
+            if showExportToast, let result = exportResult {
                 VStack {
                     Spacer()
 
                     HStack(spacing: 12) {
-                        Image(systemName: message.contains("success") ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                            .foregroundStyle(message.contains("success") ? .green : .red)
+                        Image(systemName: result.icon)
+                            .foregroundStyle(result.color)
 
-                        Text(message)
+                        Text(result.message)
                             .font(.subheadline)
                             .foregroundStyle(.primary)
                     }
@@ -193,19 +217,19 @@ struct SettingsView: View {
         } message: {
             Text("This will permanently delete all tracking data. This action cannot be undone.")
         }
-        .onChange(of: exportMessage) { oldValue, newValue in
+        .onChange(of: exportResult?.message) { oldValue, newValue in
             if newValue != nil {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                    showExportSuccess = true
+                    showExportToast = true
                 }
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                     withAnimation {
-                        showExportSuccess = false
+                        showExportToast = false
                     }
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        exportMessage = nil
+                        exportResult = nil
                     }
                 }
             }
@@ -223,9 +247,9 @@ struct SettingsView: View {
                 do {
                     let csvContent = generateCSV()
                     try csvContent.write(to: url, atomically: true, encoding: .utf8)
-                    exportMessage = "Data exported successfully to \(url.lastPathComponent)"
+                    exportResult = .success("Data exported to \(url.lastPathComponent)")
                 } catch {
-                    exportMessage = "Export failed: \(error.localizedDescription)"
+                    exportResult = .failure("Export failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -271,7 +295,7 @@ struct SettingsView: View {
 
     private func resetData() {
         DatabaseManager.shared.resetAllData()
-        exportMessage = "All data has been reset"
+        exportResult = .success("All data has been reset")
     }
 }
 
