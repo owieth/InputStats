@@ -17,7 +17,8 @@ class KeyboardTracker {
         totalKeystrokes += 1
 
         let today = getTodayString()
-        let modifierInt = Int(modifierFlags.rawValue)
+        let meaningfulFlags = modifierFlags.intersection([.maskShift, .maskControl, .maskAlternate, .maskCommand])
+        let modifierInt = Int(meaningfulFlags.rawValue)
 
         // Update keyboard heatmap in database
         DatabaseManager.shared.updateKeyboard(
