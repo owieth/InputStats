@@ -1,20 +1,15 @@
 import SwiftUI
 
-enum StatsTab {
-    case mouse
-    case keyboard
-}
-
 struct MainWindowView: View {
-    @State private var selectedTab: StatsTab = .mouse
+    @State private var selectedTab: MetricTab = .mouse
 
     var body: some View {
         VStack(spacing: 0) {
             // Header with tab switcher
             HStack {
                 Picker("View", selection: $selectedTab) {
-                    Text("Mouse").tag(StatsTab.mouse)
-                    Text("Keyboard").tag(StatsTab.keyboard)
+                    Text("Mouse").tag(MetricTab.mouse)
+                    Text("Keyboard").tag(MetricTab.keyboard)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 200)
