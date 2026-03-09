@@ -11,8 +11,19 @@
 		LAUNCH_PKG /* LaunchAtLogin in Frameworks */ = {isa = PBXBuildFile; productRef = LAUNCH_REF /* LaunchAtLogin */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		TEST_CONTAINER_PROXY /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PROJECT /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = APP_TARGET;
+			remoteInfo = InputMetrics;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		APP_PRODUCT /* InputMetrics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InputMetrics.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		TEST_PRODUCT /* InputMetricsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InputMetricsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -34,6 +45,11 @@
 			path = InputMetrics/InputMetrics;
 			sourceTree = "<group>";
 		};
+		TEST_SOURCE_ROOT /* InputMetricsTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = InputMetricsTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +62,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		TEST_FRAMEWORKS_PHASE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -53,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				APP_PRODUCT /* InputMetrics.app */,
+				TEST_PRODUCT /* InputMetricsTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				SOURCE_ROOT /* InputMetrics/InputMetrics */,
+				TEST_SOURCE_ROOT /* InputMetricsTests */,
 				PRODUCTS_GROUP /* Products */,
 			);
 			sourceTree = "<group>";
@@ -92,6 +117,27 @@
 			productReference = APP_PRODUCT /* InputMetrics.app */;
 			productType = "com.apple.product-type.application";
 		};
+		TEST_TARGET /* InputMetricsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TEST_CONFIG_LIST /* Build configuration list for PBXNativeTarget "InputMetricsTests" */;
+			buildPhases = (
+				TEST_SOURCES_PHASE /* Sources */,
+				TEST_FRAMEWORKS_PHASE /* Frameworks */,
+				TEST_RESOURCES_PHASE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TEST_TARGET_DEPENDENCY /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				TEST_SOURCE_ROOT /* InputMetricsTests */,
+			);
+			name = InputMetricsTests;
+			productName = InputMetricsTests;
+			productReference = TEST_PRODUCT /* InputMetricsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -121,12 +167,20 @@
 			projectRoot = "";
 			targets = (
 				APP_TARGET /* InputMetrics */,
+				TEST_TARGET /* InputMetricsTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		RESOURCES_PHASE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TEST_RESOURCES_PHASE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -143,7 +197,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		TEST_SOURCES_PHASE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TEST_TARGET_DEPENDENCY /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = APP_TARGET /* InputMetrics */;
+			targetProxy = TEST_CONTAINER_PROXY /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		DEBUG_CONFIG /* Debug */ = {
@@ -328,6 +397,40 @@
 			};
 			name = Release;
 		};
+		TEST_DEBUG_CONFIG /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inputmetrics.InputMetricsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/InputMetrics.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/InputMetrics";
+			};
+			name = Debug;
+		};
+		TEST_RELEASE_CONFIG /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.inputmetrics.InputMetricsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/InputMetrics.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/InputMetrics";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -345,6 +448,15 @@
 			buildConfigurations = (
 				DEBUG_CONFIG /* Debug */,
 				RELEASE_CONFIG /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TEST_CONFIG_LIST /* Build configuration list for PBXNativeTarget "InputMetricsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TEST_DEBUG_CONFIG /* Debug */,
+				TEST_RELEASE_CONFIG /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
