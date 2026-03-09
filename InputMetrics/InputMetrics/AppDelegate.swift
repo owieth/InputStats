@@ -76,6 +76,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.terminate(nil)
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        liveStatsTimer?.invalidate()
+        liveStatsTimer = nil
+
+        MainActor.assumeIsolated {
+            MouseTracker.shared.persistData()
+            KeyboardTracker.shared.persistData()
+            EventMonitor.shared.stop()
+        }
+    }
+
     // MARK: - Live Stats
 
     private func startLiveStatsTimer() {
