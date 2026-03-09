@@ -172,6 +172,77 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    // MARK: - Hourly Summary Operations
+
+    func updateHourlySummary(
+        date: String,
+        hour: Int,
+        mouseDistance: Double = 0,
+        mouseClicks: Int = 0,
+        keystrokes: Int = 0
+    ) {
+        guard let db = dbQueue else { return }
+
+        dbQueue_serial.async {
+            do {
+                try db.write { db in
+                    if var summary = try HourlySummary
+                        .filter(HourlySummary.Columns.date == date)
+                        .filter(HourlySummary.Columns.hour == hour)
+                        .fetchOne(db) {
+                        summary.mouseDistancePx += mouseDistance
+                        summary.mouseClicks += mouseClicks
+                        summary.keystrokes += keystrokes
+                        try summary.update(db)
+                    } else {
+                        let newSummary = HourlySummary(
+                            date: date,
+                            hour: hour,
+                            mouseDistancePx: mouseDistance,
+                            mouseClicks: mouseClicks,
+                            keystrokes: keystrokes
+                        )
+                        try newSummary.insert(db)
+                    }
+                }
+            } catch {
+                print("Error updating hourly summary: \(error)")
+            }
+        }
+    }
+
+    func getHourlySummaries(date: String) -> [HourlySummary] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try HourlySummary
+                    .filter(HourlySummary.Columns.date == date)
+                    .order(HourlySummary.Columns.hour)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Error fetching hourly summaries: \(error)")
+            return []
+        }
+    }
+
+    func getHourlySummaries(from startDate: String, to endDate: String) -> [HourlySummary] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try HourlySummary
+                    .filter(HourlySummary.Columns.date >= startDate && HourlySummary.Columns.date <= endDate)
+                    .order(HourlySummary.Columns.date, HourlySummary.Columns.hour)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Error fetching hourly summaries: \(error)")
+            return []
+        }
+    }
+
     // MARK: - Mouse Heatmap Operations
 
     func updateMouseHeatmap(date: String, screenId: String, bucketX: Int, bucketY: Int) {
@@ -368,6 +439,21 @@ final class DatabaseManager: @unchecked Sendable {
             }
         } catch {
             print("Error fetching all daily summaries: \(error)")
+            return []
+        }
+    }
+
+    func getAllHourlySummaries() -> [HourlySummary] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try HourlySummary
+                    .order(HourlySummary.Columns.date, HourlySummary.Columns.hour)
+                    .fetchAll(db)
+            }
+        } catch {
+            print("Error fetching all hourly summaries: \(error)")
             return []
         }
     }

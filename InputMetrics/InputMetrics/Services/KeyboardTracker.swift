@@ -40,9 +40,16 @@ class KeyboardTracker {
 
     func persistData() {
         let today = getTodayString()
+        let currentHour = getCurrentHour()
 
         DatabaseManager.shared.updateDailySummary(
             date: today,
+            keystrokes: totalKeystrokes
+        )
+
+        DatabaseManager.shared.updateHourlySummary(
+            date: today,
+            hour: currentHour,
             keystrokes: totalKeystrokes
         )
 
@@ -78,6 +85,10 @@ class KeyboardTracker {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: Date())
+    }
+
+    private func getCurrentHour() -> Int {
+        Calendar.current.component(.hour, from: Date())
     }
 
     nonisolated deinit {
