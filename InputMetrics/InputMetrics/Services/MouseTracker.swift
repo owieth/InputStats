@@ -28,8 +28,68 @@ class MouseTracker {
     private var persistTimer: Timer?
     private let persistInterval: TimeInterval = 30.0
 
+    // Cached screen geometry — invalidated on display configuration changes
+    private struct ScreenCache {
+        let primaryHeight: CGFloat
+        let boundingMinX: CGFloat
+        let boundingMinY: CGFloat
+        let boundingWidth: CGFloat
+        let boundingHeight: CGFloat
+        let screens: [(frame: CGRect, id: String)]
+    }
+
+    private var screenCache: ScreenCache?
+
     private init() {
         setupPersistTimer()
+        rebuildScreenCache()
+
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.rebuildScreenCache()
+            }
+        }
+    }
+
+    private func rebuildScreenCache() {
+        let screens = NSScreen.screens
+        guard !screens.isEmpty else {
+            screenCache = nil
+            return
+        }
+
+        let primaryHeight = screens[0].frame.height
+
+        var minX = CGFloat.infinity
+        var minY = CGFloat.infinity
+        var maxX = -CGFloat.infinity
+        var maxY = -CGFloat.infinity
+
+        var cachedScreens: [(frame: CGRect, id: String)] = []
+
+        for screen in screens {
+            let frame = screen.frame
+            minX = min(minX, frame.minX)
+            minY = min(minY, frame.minY)
+            maxX = max(maxX, frame.maxX)
+            maxY = max(maxY, frame.maxY)
+
+            let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.stringValue ?? "primary"
+            cachedScreens.append((frame: frame, id: id))
+        }
+
+        screenCache = ScreenCache(
+            primaryHeight: primaryHeight,
+            boundingMinX: minX,
+            boundingMinY: minY,
+            boundingWidth: maxX - minX,
+            boundingHeight: maxY - minY,
+            screens: cachedScreens
+        )
     }
 
     func trackMovement(to point: CGPoint) {
@@ -117,32 +177,14 @@ class MouseTracker {
     }
 
     private func bucketForPoint(_ point: CGPoint) -> (x: Int, y: Int) {
-        let screens = NSScreen.screens
-        guard !screens.isEmpty else { return (0, 0) }
+        guard let cache = screenCache else { return (0, 0) }
 
         // Convert CG Y (origin bottom-left) to AppKit Y (origin top-left)
-        let primaryHeight = NSScreen.screens[0].frame.height
-        let appKitY = primaryHeight - point.y
-
-        var minX = CGFloat.infinity
-        var minY = CGFloat.infinity
-        var maxX = -CGFloat.infinity
-        var maxY = -CGFloat.infinity
-
-        for screen in screens {
-            let frame = screen.frame
-            minX = min(minX, frame.minX)
-            minY = min(minY, frame.minY)
-            maxX = max(maxX, frame.maxX)
-            maxY = max(maxY, frame.maxY)
-        }
-
-        let width = maxX - minX
-        let height = maxY - minY
+        let appKitY = cache.primaryHeight - point.y
 
         // Normalize to 50x50 grid
-        let normalizedX = (point.x - minX) / width
-        let normalizedY = (appKitY - minY) / height
+        let normalizedX = (point.x - cache.boundingMinX) / cache.boundingWidth
+        let normalizedY = (appKitY - cache.boundingMinY) / cache.boundingHeight
         let bucketX = min(49, max(0, Int(normalizedX * 50)))
         let bucketY = min(49, max(0, Int(normalizedY * 50)))
 
@@ -150,10 +192,11 @@ class MouseTracker {
     }
 
     private func getScreenId(for point: CGPoint) -> String {
-        // Find which screen contains this point
-        for screen in NSScreen.screens {
+        guard let cache = screenCache else { return "primary" }
+
+        for screen in cache.screens {
             if screen.frame.contains(point) {
-                return (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.stringValue ?? "primary"
+                return screen.id
             }
         }
         return "primary"
