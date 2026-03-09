@@ -82,9 +82,6 @@ struct MouseStatsView: View {
     private func loadChartData() {
         let calendar = Calendar.current
         let today = Date()
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
 
         let daysBack: Int
         switch selectedRange {
@@ -95,8 +92,8 @@ struct MouseStatsView: View {
 
         guard let startDate = calendar.date(byAdding: .day, value: -daysBack, to: today) else { return }
 
-        let startString = formatter.string(from: startDate)
-        let endString = formatter.string(from: today)
+        let startString = DateHelper.string(from: startDate)
+        let endString = DateHelper.string(from: today)
 
         chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
     }

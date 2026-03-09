@@ -126,10 +126,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let mouseStats = MouseTracker.shared.getCurrentStats()
         let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
 
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
+        let today = DateHelper.todayString()
 
         Task.detached { [weak self] in
             let summary = DatabaseManager.shared.getDailySummary(date: today)
