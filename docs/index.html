@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InputMetrics — macOS Input Tracker</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #fff;
+      --text: #1a1a1a;
+      --text-secondary: #555;
+      --accent: #0071e3;
+      --accent-light: #e8f2ff;
+      --border: #e5e5e5;
+      --code-bg: #f5f5f5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111;
+        --surface: #1a1a1a;
+        --text: #f0f0f0;
+        --text-secondary: #999;
+        --accent: #4da3ff;
+        --accent-light: #1a2a3f;
+        --border: #2a2a2a;
+        --code-bg: #222;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero {
+      padding: 80px 0 48px;
+      text-align: center;
+    }
+    .hero-icon {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, var(--accent), #5856d6);
+      border-radius: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .hero-icon svg { width: 48px; height: 48px; fill: #fff; }
+    .hero h1 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      text-wrap: balance;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      text-wrap: pretty;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Sections */
+    section { padding: 48px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 24px;
+      text-wrap: balance;
+    }
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 24px 0 8px;
+    }
+    p, li { color: var(--text-secondary); font-size: 16px; }
+    p + p { margin-top: 12px; }
+    ul { padding-left: 20px; margin-top: 8px; }
+    li { margin-bottom: 6px; }
+    li strong { color: var(--text); }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    @media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .feature-card h3 { margin: 0 0 6px; font-size: 16px; }
+    .feature-card p { font-size: 14px; margin: 0; }
+
+    /* Tech table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 15px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    th { font-weight: 600; color: var(--text); }
+    td { color: var(--text-secondary); }
+
+    /* Privacy section */
+    .privacy-highlight {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 16px;
+    }
+    .privacy-highlight ul { padding-left: 18px; }
+
+    /* Code */
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Menlo, monospace;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+        </svg>
+      </div>
+      <h1>InputMetrics</h1>
+      <p>A lightweight macOS menu bar app that tracks your keyboard and mouse usage with beautiful charts, heatmaps, and detailed statistics. Entirely private, entirely local.</p>
+      <span class="badge">macOS 15+ &middot; Free &middot; Open Source</span>
+    </div>
+
+    <!-- Features -->
+    <section>
+      <h2>Features</h2>
+      <div class="features">
+        <div class="feature-card">
+          <h3>Mouse Distance</h3>
+          <p>Tracks cursor travel in pixels, converted to real-world meters, kilometers, feet, or miles. Includes fun comparisons showing your progress toward circling the Earth or reaching the Moon.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Click Tracking</h3>
+          <p>Separate counters for left, right, and middle mouse clicks. View today's counts and all-time totals at a glance.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Scroll Distance</h3>
+          <p>Measures both vertical and horizontal scroll distance in pixels, with automatic shorthand formatting for large numbers.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Keystroke Counter</h3>
+          <p>Counts every keypress with per-key frequency tracking. See your top 5 most-used keys each day and all-time keystroke totals.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Mouse Heatmap</h3>
+          <p>A 50&times;50 grid heatmap showing where you click most. Multi-monitor aware with per-display and aggregate views. Color scale from blue to red.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Keyboard Heatmap</h3>
+          <p>Full QWERTZ keyboard layout rendered with color-coded intensity, showing which keys you press most. Tracks modifier combinations (Cmd, Shift, Ctrl, Option).</p>
+        </div>
+        <div class="feature-card">
+          <h3>Interactive Charts</h3>
+          <p>Smooth line charts with area fills and data points for weekly, monthly, and yearly views. Hover tooltips show exact values for any day.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Menu Bar &amp; Dashboard</h3>
+          <p>Quick-access popover from the menu bar for daily stats. Full dashboard window with expanded charts and heatmaps for deeper analysis.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section>
+      <h2>How It Works</h2>
+      <p>InputMetrics lives in your menu bar and passively listens to input events using a read-only <code>CGEventTap</code>. It cannot intercept, modify, or block any input &mdash; it only counts.</p>
+
+      <h3>Data Collected</h3>
+      <ul>
+        <li><strong>Mouse:</strong> Cursor distance (pixels), click counts (left/right/middle), scroll distance (vertical/horizontal), click positions bucketed into a 50&times;50 grid</li>
+        <li><strong>Keyboard:</strong> Per-key press count by virtual key code and modifier flags</li>
+        <li><strong>Timing:</strong> Daily and hourly aggregates for trend charts</li>
+      </ul>
+
+      <h3>Data NOT Collected</h3>
+      <ul>
+        <li>What you type (no keystroke content, sequences, or text)</li>
+        <li>What is on your screen (no screenshots, window titles, or app names)</li>
+        <li>Personal information of any kind</li>
+      </ul>
+
+      <p>In-memory buffers flush to the local SQLite database every 30 seconds and on app quit. You can configure automatic data pruning (3 months, 6 months, 1 year, or keep forever) in Settings.</p>
+    </section>
+
+    <!-- Settings & Data Management -->
+    <section>
+      <h2>Settings &amp; Data Management</h2>
+      <ul>
+        <li><strong>Launch at Login:</strong> Start InputMetrics automatically when you log in</li>
+        <li><strong>Live Menu Bar Stats:</strong> Optionally display today's distance and keystroke count next to the menu bar icon, refreshed every 2 seconds</li>
+        <li><strong>Distance Unit:</strong> Switch between Metric (m/km) and Imperial (ft/mi)</li>
+        <li><strong>Data Retention:</strong> Auto-prune data older than 3 months, 6 months, 1 year, or keep everything forever</li>
+        <li><strong>Export CSV:</strong> Export all data (daily summaries, mouse heatmap, keyboard heatmap) to a CSV file at a location you choose</li>
+        <li><strong>Reset All Data:</strong> Permanently delete all stored data with a confirmation prompt</li>
+      </ul>
+    </section>
+
+    <!-- Tech Stack -->
+    <section>
+      <h2>Tech Stack</h2>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Language</td><td>Swift 5</td></tr>
+        <tr><td>UI</td><td>SwiftUI with AppKit bridging</td></tr>
+        <tr><td>Charts</td><td>Swift Charts (LineMark, AreaMark, PointMark)</td></tr>
+        <tr><td>Event Capture</td><td>CGEventTap (listen-only)</td></tr>
+        <tr><td>Database</td><td>SQLite via GRDB.swift</td></tr>
+        <tr><td>Login Item</td><td>LaunchAtLogin by Sindre Sorhus</td></tr>
+        <tr><td>Architecture</td><td>MVVM with @Observable ViewModels</td></tr>
+        <tr><td>Minimum macOS</td><td>15.0 (Sequoia)</td></tr>
+      </table>
+    </section>
+
+    <!-- Permissions -->
+    <section>
+      <h2>Permissions</h2>
+      <p>InputMetrics requires two macOS permissions to function. Both must be explicitly granted by you in System Settings &gt; Privacy &amp; Security:</p>
+      <ul>
+        <li><strong>Accessibility:</strong> Allows the app to monitor global input events (keyboard and mouse)</li>
+        <li><strong>Input Monitoring:</strong> Required by macOS for apps that observe key and pointer events</li>
+      </ul>
+      <p>The app runs sandboxed with no other entitlements. If permissions are not granted, InputMetrics will prompt you and open the relevant System Settings pane.</p>
+    </section>
+
+    <!-- Privacy Policy -->
+    <section id="privacy">
+      <h2>Privacy Policy</h2>
+      <p><em>Last updated: March 11, 2026</em></p>
+
+      <div class="privacy-highlight">
+        <h3>The Short Version</h3>
+        <p>InputMetrics collects zero personal data. Everything stays on your Mac. Nothing is ever transmitted anywhere.</p>
+      </div>
+
+      <h3>Data Collected</h3>
+      <p>InputMetrics records only aggregate usage counts, stored locally in a SQLite database at <code>~/Library/Application Support/InputMetrics/metrics.db</code>:</p>
+      <ul>
+        <li>Mouse cursor distance traveled (in pixels)</li>
+        <li>Mouse click counts (left, right, middle)</li>
+        <li>Scroll distance (vertical, horizontal)</li>
+        <li>Click position heatmap (50&times;50 bucket grid per screen)</li>
+        <li>Keystroke count per virtual key code and modifier combination</li>
+        <li>Daily and hourly aggregate summaries</li>
+      </ul>
+
+      <h3>Data NOT Collected</h3>
+      <ul>
+        <li>Keystroke content, typed text, or character sequences</li>
+        <li>Screen content, screenshots, or window information</li>
+        <li>Application names or browsing history</li>
+        <li>Personal information, identifiers, or account data</li>
+        <li>Location, contacts, or any other sensitive data</li>
+      </ul>
+
+      <h3>Data Storage &amp; Transmission</h3>
+      <ul>
+        <li>All data is stored exclusively on your device</li>
+        <li>The app makes zero network requests &mdash; no analytics, no telemetry, no crash reporting, no update checks</li>
+        <li>The app is sandboxed and has no network entitlements</li>
+        <li>There is no server, no cloud sync, and no third-party service integration</li>
+      </ul>
+
+      <h3>Data Control</h3>
+      <ul>
+        <li><strong>Export:</strong> You can export all data to a CSV file at any time from Settings</li>
+        <li><strong>Delete:</strong> You can reset all data from Settings, which permanently erases the database</li>
+        <li><strong>Retention:</strong> Configure automatic data pruning (3 months, 6 months, 1 year, or forever)</li>
+        <li><strong>Uninstall:</strong> Removing the app and its container at <code>~/Library/Application Support/InputMetrics/</code> deletes all data</li>
+      </ul>
+
+      <h3>Third-Party Services</h3>
+      <p>InputMetrics uses no third-party services, SDKs, or libraries that collect data. The only external dependencies are <a href="https://github.com/groue/GRDB.swift">GRDB.swift</a> (local database) and <a href="https://github.com/sindresorhus/LaunchAtLogin">LaunchAtLogin</a> (login item management), neither of which perform any network activity.</p>
+
+      <h3>Children</h3>
+      <p>InputMetrics does not collect personal information from anyone, including children under the age of 13.</p>
+
+      <h3>Changes</h3>
+      <p>If this policy changes, the updated version will be posted on this page with a new date.</p>
+
+      <h3>Contact</h3>
+      <p>Questions about this policy? Open an issue on <a href="https://github.com/owieth/InputStats/issues">GitHub</a>.</p>
+    </section>
+
+  </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Olivier Winkler. <a href="https://github.com/owieth/InputStats">View on GitHub</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
