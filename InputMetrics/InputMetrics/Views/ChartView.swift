@@ -24,11 +24,26 @@ struct ChartView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Chart(data, id: \.date) { item in
-                    BarMark(
+                    LineMark(
                         x: .value("Date", formatLabel(from: item.date)),
                         y: .value("Value", metricValue(for: item))
                     )
                     .foregroundStyle(Color.blue)
+                    .interpolationMethod(.catmullRom)
+
+                    AreaMark(
+                        x: .value("Date", formatLabel(from: item.date)),
+                        y: .value("Value", metricValue(for: item))
+                    )
+                    .foregroundStyle(Color.blue.opacity(0.1))
+                    .interpolationMethod(.catmullRom)
+
+                    PointMark(
+                        x: .value("Date", formatLabel(from: item.date)),
+                        y: .value("Value", metricValue(for: item))
+                    )
+                    .foregroundStyle(Color.blue)
+                    .symbolSize(30)
                 }
                 .chartYAxisLabel(yAxisLabel)
             }

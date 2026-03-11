@@ -141,11 +141,26 @@ struct MenuBarView: View {
 
                 if !viewModel.chartData.isEmpty {
                     Chart(viewModel.chartData.suffix(7), id: \.date) { item in
-                        BarMark(
+                        LineMark(
                             x: .value("Day", viewModel.shortDay(from: item.date)),
                             y: .value("Distance", viewModel.chartDistance(item.mouseDistancePx, unit: preferences.distanceUnit))
                         )
-                        .foregroundStyle(.blue.gradient)
+                        .foregroundStyle(.blue)
+                        .interpolationMethod(.catmullRom)
+
+                        AreaMark(
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
+                            y: .value("Distance", viewModel.chartDistance(item.mouseDistancePx, unit: preferences.distanceUnit))
+                        )
+                        .foregroundStyle(.blue.opacity(0.1))
+                        .interpolationMethod(.catmullRom)
+
+                        PointMark(
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
+                            y: .value("Distance", viewModel.chartDistance(item.mouseDistancePx, unit: preferences.distanceUnit))
+                        )
+                        .foregroundStyle(.blue)
+                        .symbolSize(30)
                     }
                     .frame(height: 150)
                     .chartYAxisLabel(preferences.distanceUnit == .metric ? "km" : "mi")
@@ -204,11 +219,26 @@ struct MenuBarView: View {
 
                 if !viewModel.chartData.isEmpty {
                     Chart(viewModel.chartData.suffix(7), id: \.date) { item in
-                        BarMark(
+                        LineMark(
                             x: .value("Day", viewModel.shortDay(from: item.date)),
                             y: .value("Keystrokes", item.keystrokes)
                         )
-                        .foregroundStyle(.purple.gradient)
+                        .foregroundStyle(.purple)
+                        .interpolationMethod(.catmullRom)
+
+                        AreaMark(
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
+                            y: .value("Keystrokes", item.keystrokes)
+                        )
+                        .foregroundStyle(.purple.opacity(0.1))
+                        .interpolationMethod(.catmullRom)
+
+                        PointMark(
+                            x: .value("Day", viewModel.shortDay(from: item.date)),
+                            y: .value("Keystrokes", item.keystrokes)
+                        )
+                        .foregroundStyle(.purple)
+                        .symbolSize(30)
                     }
                     .frame(height: 150)
                     .padding(.horizontal)
