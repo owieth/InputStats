@@ -84,6 +84,30 @@ struct SettingsView: View {
                         }
                     }
 
+                    // Shortcuts Section
+                    SettingsSectionView(title: "Shortcuts", icon: "command") {
+                        SettingsRowView {
+                            HStack {
+                                Label("Global shortcut (\u{2325}\u{21e7}I)", systemImage: "keyboard")
+                                    .font(.body)
+                                Spacer()
+                                Toggle("", isOn: $preferences.hotkeyEnabled)
+                                    .labelsHidden()
+                                    .onChange(of: preferences.hotkeyEnabled) { _, enabled in
+                                        if enabled {
+                                            HotkeyManager.shared.start {
+                                                if let delegate = NSApp.delegate as? AppDelegate {
+                                                    delegate.togglePopoverFromHotkey()
+                                                }
+                                            }
+                                        } else {
+                                            HotkeyManager.shared.stop()
+                                        }
+                                    }
+                            }
+                        }
+                    }
+
                     // Display Section
                     SettingsSectionView(title: "Display", icon: "ruler") {
                         SettingsRowView {

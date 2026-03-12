@@ -90,6 +90,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func togglePopoverFromHotkey() {
+        togglePopover()
+    }
+
     private func togglePopover() {
         guard let popover = popover, let button = statusItem?.button else { return }
         if popover.isShown {
