@@ -338,6 +338,15 @@ struct MenuBarView: View {
                 .padding(.horizontal)
             }
 
+            // Hourly Breakdown
+            VStack(alignment: .leading, spacing: 8) {
+                DisclosureGroup("Hourly Breakdown") {
+                    HourlyBreakdownView(hourlySummaries: viewModel.hourlySummaries)
+                        .padding(.top, 8)
+                }
+                .padding(.horizontal)
+            }
+
             // Top Keys
             VStack(alignment: .leading, spacing: 8) {
                 Text("Most Used Keys")
