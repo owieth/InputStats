@@ -7,6 +7,7 @@ class WindowManager: ObservableObject {
 
     private var settingsWindow: NSWindow?
     private var dashboardWindow: NSWindow?
+    private var onboardingWindow: NSWindow?
 
     private init() {}
 
@@ -50,5 +51,34 @@ class WindowManager: ObservableObject {
 
         dashboardWindow = window
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func openOnboardingWindow(onComplete: @escaping () -> Void) {
+        if let window = onboardingWindow, window.isVisible {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let onboardingView = OnboardingView {
+            UserPreferences.shared.hasCompletedOnboarding = true
+            onComplete()
+        }
+        let hostingController = NSHostingController(rootView: onboardingView)
+
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "Welcome to InputMetrics"
+        window.styleMask = [.titled, .closable]
+        window.setContentSize(NSSize(width: 450, height: 400))
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+
+        onboardingWindow = window
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func closeOnboardingWindow() {
+        onboardingWindow?.close()
+        onboardingWindow = nil
     }
 }

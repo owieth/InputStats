@@ -77,6 +77,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Start milestone check timer
         startMilestoneCheckTimer()
 
+        // Show onboarding on first launch
+        if !UserPreferences.shared.hasCompletedOnboarding {
+            WindowManager.shared.openOnboardingWindow {
+                WindowManager.shared.closeOnboardingWindow()
+            }
+        }
+
+
         AppLogger.general.info("App launched")
     }
 

@@ -69,6 +69,12 @@ class UserPreferences: ObservableObject {
         }
     }
 
+    @Published var hasCompletedOnboarding: Bool {
+        didSet {
+            UserDefaults.standard.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding")
+        }
+    }
+
     private init() {
         let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? DistanceUnit.metric.rawValue
         self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .metric
@@ -86,5 +92,6 @@ class UserPreferences: ObservableObject {
         }
 
         self.notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? false
+        self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     }
 }
