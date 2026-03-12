@@ -330,7 +330,7 @@ struct SettingsView: View {
     private func generateCSV() -> String {
         var lines: [String] = []
 
-        lines.append(csvRow(["Date", "Mouse Distance (px)", "Left Clicks", "Right Clicks", "Middle Clicks", "Keystrokes"]))
+        lines.append(csvRow(["Date", "Mouse Distance (px)", "Left Clicks", "Right Clicks", "Middle Clicks", "Keystrokes", "Scroll Vertical", "Scroll Horizontal"]))
 
         let allSummaries = DatabaseManager.shared.getAllDailySummaries()
         for summary in allSummaries {
@@ -340,7 +340,9 @@ struct SettingsView: View {
                 "\(summary.mouseClicksLeft)",
                 "\(summary.mouseClicksRight)",
                 "\(summary.mouseClicksMiddle)",
-                "\(summary.keystrokes)"
+                "\(summary.keystrokes)",
+                "\(summary.scrollDistanceVertical)",
+                "\(summary.scrollDistanceHorizontal)"
             ]))
         }
 
