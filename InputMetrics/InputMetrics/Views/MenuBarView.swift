@@ -211,6 +211,26 @@ struct MenuBarView: View {
                 .padding()
                 .background(Color.secondary.opacity(0.1))
                 .cornerRadius(12)
+
+                // Active Time Card
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(systemName: "clock")
+                        .font(.title2)
+                        .foregroundStyle(.teal)
+
+                    let hours = viewModel.activeMinutes / 60
+                    let mins = viewModel.activeMinutes % 60
+                    Text(hours > 0 ? "\(hours)h \(mins)m" : "\(mins)m")
+                        .font(.title.bold())
+
+                    Text("Active Time")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.secondary.opacity(0.1))
+                .cornerRadius(12)
             }
             .padding(.horizontal)
 

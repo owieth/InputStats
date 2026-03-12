@@ -23,6 +23,7 @@ final class MenuBarViewModel {
     var distanceProgress: Double = 0
     var scrollVertical: Double = 0
     var scrollHorizontal: Double = 0
+    var activeMinutes: Int = 0
     var allTimeDistance: Double = 0
     var allTimeClicks: Int = 0
     var allTimeKeystrokes: Int = 0
@@ -69,6 +70,7 @@ final class MenuBarViewModel {
             scrollHorizontal = summary.scrollDistanceHorizontal + mouseStats.scrollH
             firstActiveAt = summary.firstActiveAt ?? liveActivity.first
             lastActiveAt = liveActivity.last ?? summary.lastActiveAt
+            activeMinutes = summary.activeMinutes
         } else {
             mouseDistance = mouseStats.distance
             keystrokes = keyboardStats

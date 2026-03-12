@@ -14,6 +14,7 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
     var scrollDistanceHorizontal: Double
     var firstActiveAt: String?
     var lastActiveAt: String?
+    var activeMinutes: Int = 0
 
     enum CodingKeys: String, CodingKey {
         case date
@@ -26,6 +27,7 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
         case scrollDistanceHorizontal = "scroll_distance_horizontal"
         case firstActiveAt = "first_active_at"
         case lastActiveAt = "last_active_at"
+        case activeMinutes = "active_minutes"
     }
 
     enum Columns {
@@ -39,5 +41,6 @@ struct DailySummary: Codable, FetchableRecord, PersistableRecord {
         static let scrollDistanceHorizontal = Column(CodingKeys.scrollDistanceHorizontal)
         static let firstActiveAt = Column(CodingKeys.firstActiveAt)
         static let lastActiveAt = Column(CodingKeys.lastActiveAt)
+        static let activeMinutes = Column(CodingKeys.activeMinutes)
     }
 }

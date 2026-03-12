@@ -147,6 +147,7 @@ class MouseTracker {
         let today = DateHelper.todayString()
         let currentHour = getCurrentHour()
         let activityTimes = EventMonitor.shared.getActivityTimes()
+        let activeMinutes = Int(EventMonitor.shared.getAndResetActiveSeconds() / 60)
 
         DatabaseManager.shared.updateDailySummary(
             date: today,
@@ -157,7 +158,8 @@ class MouseTracker {
             scrollVertical: scrollVertical,
             scrollHorizontal: scrollHorizontal,
             firstActiveAt: activityTimes.first,
-            lastActiveAt: activityTimes.last
+            lastActiveAt: activityTimes.last,
+            activeMinutes: activeMinutes
         )
 
         DatabaseManager.shared.updateHourlySummary(

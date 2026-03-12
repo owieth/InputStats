@@ -15,6 +15,10 @@ class EventMonitor {
     private var lastActiveAt: String?
     private var currentDate: String?
 
+    private var lastEventTime: Date = Date()
+    private var activeSeconds: TimeInterval = 0
+    private let idleThreshold: TimeInterval = 300
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -123,6 +127,12 @@ class EventMonitor {
         (firstActiveAt, lastActiveAt)
     }
 
+    func getAndResetActiveSeconds() -> TimeInterval {
+        let seconds = activeSeconds
+        activeSeconds = 0
+        return seconds
+    }
+
     nonisolated private func handleEvent(type: CGEventType, event: CGEvent) {
         let location = event.location
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
@@ -143,6 +153,12 @@ class EventMonitor {
                 firstActiveAt = timeString
             }
             lastActiveAt = timeString
+
+            let elapsed = now.timeIntervalSince(lastEventTime)
+            if elapsed < idleThreshold {
+                activeSeconds += elapsed
+            }
+            lastEventTime = now
 
             switch type {
             case .mouseMoved:
