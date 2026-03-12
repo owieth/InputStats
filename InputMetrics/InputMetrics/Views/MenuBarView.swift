@@ -133,6 +133,15 @@ struct MenuBarView: View {
 
                     // All Time Stats
                     allTimeStatsView
+
+                    // App Usage
+                    VStack(alignment: .leading, spacing: 8) {
+                        DisclosureGroup("App Usage") {
+                            AppUsageView(entries: viewModel.appUsageEntries)
+                                .padding(.top, 8)
+                        }
+                        .padding(.horizontal)
+                    }
                 }
                 .padding(.vertical)
             }
