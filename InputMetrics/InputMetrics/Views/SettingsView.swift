@@ -1,5 +1,6 @@
 import SwiftUI
 import LaunchAtLogin
+import UniformTypeIdentifiers
 
 enum ExportFormat: String, CaseIterable {
     case csv = "CSV"
@@ -198,7 +199,7 @@ struct SettingsView: View {
                                             .font(.body.weight(.medium))
                                             .foregroundStyle(.primary)
 
-                                        Text("Save your metrics as CSV")
+                                        Text("Save your metrics as \(exportFormat.rawValue)")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
@@ -322,15 +323,21 @@ struct SettingsView: View {
 
     private func exportData() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "InputMetrics-Export.csv"
+        let fileExtension = exportFormat == .csv ? "csv" : "json"
+        panel.nameFieldStringValue = "InputMetrics-Export.\(fileExtension)"
         panel.canCreateDirectories = true
-        panel.allowedContentTypes = [.commaSeparatedText]
+
+        if exportFormat == .csv {
+            panel.allowedContentTypes = [.commaSeparatedText]
+        } else {
+            panel.allowedContentTypes = [.json]
+        }
 
         panel.begin { response in
             if response == .OK, let url = panel.url {
                 do {
-                    let csvContent = generateCSV()
-                    try csvContent.write(to: url, atomically: true, encoding: .utf8)
+                    let content = exportFormat == .csv ? generateCSV() : generateJSON()
+                    try content.write(to: url, atomically: true, encoding: .utf8)
                     exportResult = .success("Data exported to \(url.lastPathComponent)")
                 } catch {
                     exportResult = .failure("Export failed: \(error.localizedDescription)")
