@@ -6,6 +6,36 @@ struct KeyboardStatsView: View {
 
     var body: some View {
         VStack(spacing: 20) {
+            // Date navigation
+            HStack {
+                Button(action: { viewModel.previousDay() }) {
+                    Image(systemName: "chevron.left")
+                }
+                .buttonStyle(.plain)
+
+                DatePicker("", selection: $viewModel.selectedDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .onChange(of: viewModel.selectedDate) { _, _ in
+                        viewModel.loadAll()
+                    }
+
+                Button(action: { viewModel.nextDay() }) {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(.plain)
+                .disabled(Calendar.current.isDateInToday(viewModel.selectedDate))
+
+                if !Calendar.current.isDateInToday(viewModel.selectedDate) {
+                    Button("Today") {
+                        viewModel.selectedDate = Date()
+                        viewModel.loadAll()
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.blue)
+                }
+            }
+            .padding(.horizontal)
+
             // Time range selector
             HStack {
                 Spacer()

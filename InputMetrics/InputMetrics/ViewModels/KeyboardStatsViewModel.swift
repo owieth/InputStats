@@ -5,6 +5,7 @@ import Observation
 @MainActor
 final class KeyboardStatsViewModel {
     var selectedRange: TimeRange = .week
+    var selectedDate: Date = Date()
     var chartData: [DailySummary] = []
     var keyboardEntries: [KeyboardEntry] = []
 
@@ -22,9 +23,21 @@ final class KeyboardStatsViewModel {
         loadChartData()
     }
 
+    func previousDay() {
+        selectedDate = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+        loadAll()
+    }
+
+    func nextDay() {
+        let next = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+        if next <= Date() {
+            selectedDate = next
+            loadAll()
+        }
+    }
+
     func loadChartData() {
         let calendar = Calendar.current
-        let today = Date()
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
@@ -36,36 +49,38 @@ final class KeyboardStatsViewModel {
         case .year: daysBack = 365
         }
 
-        guard let startDate = calendar.date(byAdding: .day, value: -daysBack, to: today) else { return }
+        guard let startDate = calendar.date(byAdding: .day, value: -daysBack, to: selectedDate) else { return }
 
         let startString = formatter.string(from: startDate)
-        let endString = formatter.string(from: today)
+        let endString = formatter.string(from: selectedDate)
 
         chartData = DatabaseManager.shared.getDailySummaries(from: startString, to: endString)
 
-        let todayStr = formatter.string(from: today)
-        let mouseStats = MouseTracker.shared.getCurrentStats()
-        let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
+        if calendar.isDateInToday(selectedDate) {
+            let todayStr = formatter.string(from: selectedDate)
+            let mouseStats = MouseTracker.shared.getCurrentStats()
+            let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
 
-        if let idx = chartData.firstIndex(where: { $0.date == todayStr }) {
-            chartData[idx].mouseDistancePx += mouseStats.distance
-            chartData[idx].keystrokes += keyboardStats
-            chartData[idx].mouseClicksLeft += mouseStats.left
-            chartData[idx].mouseClicksRight += mouseStats.right
-            chartData[idx].mouseClicksMiddle += mouseStats.middle
-            chartData[idx].scrollDistanceVertical += mouseStats.scrollV
-            chartData[idx].scrollDistanceHorizontal += mouseStats.scrollH
-        } else {
-            chartData.append(DailySummary(
-                date: todayStr,
-                mouseDistancePx: mouseStats.distance,
-                mouseClicksLeft: mouseStats.left,
-                mouseClicksRight: mouseStats.right,
-                mouseClicksMiddle: mouseStats.middle,
-                keystrokes: keyboardStats,
-                scrollDistanceVertical: mouseStats.scrollV,
-                scrollDistanceHorizontal: mouseStats.scrollH
-            ))
+            if let idx = chartData.firstIndex(where: { $0.date == todayStr }) {
+                chartData[idx].mouseDistancePx += mouseStats.distance
+                chartData[idx].keystrokes += keyboardStats
+                chartData[idx].mouseClicksLeft += mouseStats.left
+                chartData[idx].mouseClicksRight += mouseStats.right
+                chartData[idx].mouseClicksMiddle += mouseStats.middle
+                chartData[idx].scrollDistanceVertical += mouseStats.scrollV
+                chartData[idx].scrollDistanceHorizontal += mouseStats.scrollH
+            } else {
+                chartData.append(DailySummary(
+                    date: todayStr,
+                    mouseDistancePx: mouseStats.distance,
+                    mouseClicksLeft: mouseStats.left,
+                    mouseClicksRight: mouseStats.right,
+                    mouseClicksMiddle: mouseStats.middle,
+                    keystrokes: keyboardStats,
+                    scrollDistanceVertical: mouseStats.scrollV,
+                    scrollDistanceHorizontal: mouseStats.scrollH
+                ))
+            }
         }
     }
 
@@ -73,8 +88,8 @@ final class KeyboardStatsViewModel {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
-        let today = formatter.string(from: Date())
+        let dateStr = formatter.string(from: selectedDate)
 
-        keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: today)
+        keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: dateStr)
     }
 }
