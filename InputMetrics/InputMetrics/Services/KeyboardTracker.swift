@@ -1,5 +1,6 @@
 import Foundation
 import CoreGraphics
+import os
 
 @MainActor
 class KeyboardTracker {
@@ -68,7 +69,7 @@ class KeyboardTracker {
         let count = totalKeystrokes
         totalKeystrokes = 0
 
-        print("Keyboard data persisted: \(count) keystrokes, \(bufferedEntries.count) unique keys")
+        AppLogger.keyboard.debug("Persisted: \(count) keystrokes, \(bufferedEntries.count) unique keys")
     }
 
     func reset() {

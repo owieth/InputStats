@@ -1,5 +1,6 @@
 @preconcurrency import Cocoa
 import CoreGraphics
+import os
 
 @MainActor
 class EventMonitor {
@@ -15,8 +16,8 @@ class EventMonitor {
     func start() {
         if createAndStartEventTap() { return }
 
-        print("⚠️ Event tap creation failed — accessibility permission likely not granted")
-        print("📋 Please enable InputMetrics in System Settings > Privacy & Security > Accessibility")
+        AppLogger.events.warning("Event tap creation failed -- accessibility permission likely not granted")
+        AppLogger.events.info("Please enable InputMetrics in System Settings > Privacy & Security > Accessibility")
 
         let alert = NSAlert()
         alert.messageText = "Accessibility Permission Required"
@@ -42,7 +43,7 @@ class EventMonitor {
         CGEvent.tapEnable(tap: eventTap, enable: false)
         CFMachPortInvalidate(eventTap)
         self.eventTap = nil
-        print("Event monitoring stopped")
+        AppLogger.events.info("Event monitoring stopped")
     }
 
     private func createAndStartEventTap() -> Bool {
@@ -77,7 +78,7 @@ class EventMonitor {
         let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
-        print("Event monitoring started")
+        AppLogger.events.info("Event monitoring started")
         return true
     }
 
@@ -88,11 +89,11 @@ class EventMonitor {
             MainActor.assumeIsolated {
                 self.retryCount += 1
                 if self.createAndStartEventTap() {
-                    print("Event monitoring started after permission grant")
+                    AppLogger.events.info("Event monitoring started after permission grant")
                     timer.invalidate()
                     self.retryTimer = nil
                 } else if self.retryCount >= self.maxRetries {
-                    print("⚠️ Permission not granted after \(self.maxRetries) retries — please restart the app")
+                    AppLogger.events.warning("Permission not granted after \(self.maxRetries) retries -- please restart the app")
                     timer.invalidate()
                     self.retryTimer = nil
                 }

@@ -1,6 +1,7 @@
 import Foundation
 import CoreGraphics
 import AppKit
+import os
 
 enum ClickType: Sendable {
     case left, right, middle
@@ -181,7 +182,7 @@ class MouseTracker {
         scrollHorizontal = 0
         heatmapBuffer.removeAll()
 
-        print("Mouse data persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle) SV:\(persistedScrollV) SH:\(persistedScrollH), heatmap buckets:\(persistedHeatmapBuckets)")
+        AppLogger.mouse.debug("Persisted: \(persistedDistance)px, L:\(persistedLeft) R:\(persistedRight) M:\(persistedMiddle) SV:\(persistedScrollV) SH:\(persistedScrollH), heatmap buckets:\(persistedHeatmapBuckets)")
     }
 
     func reset() {

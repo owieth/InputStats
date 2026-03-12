@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import os
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -59,7 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Start live stats timer
         startLiveStatsTimer()
 
-        print("InputMetrics launched successfully")
+        AppLogger.general.info("App launched")
     }
 
     @objc private func statusItemClicked() {
