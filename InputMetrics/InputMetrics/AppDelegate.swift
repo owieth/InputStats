@@ -56,6 +56,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             EventMonitor.shared.start()
         }
 
+        // Start global hotkey
+        if UserPreferences.shared.hotkeyEnabled {
+            HotkeyManager.shared.start { [weak self] in
+                self?.togglePopover()
+            }
+        }
+
         // Start live stats timer
         startLiveStatsTimer()
 
@@ -79,13 +86,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem?.menu = nil
         } else {
             // Left-click - toggle popover
-            guard let popover = popover else { return }
+            togglePopover()
+        }
+    }
 
-            if popover.isShown {
-                popover.performClose(nil)
-            } else {
-                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            }
+    private func togglePopover() {
+        guard let popover = popover, let button = statusItem?.button else { return }
+        if popover.isShown {
+            popover.performClose(nil)
+        } else {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 
@@ -100,6 +111,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         liveStatsTimer?.invalidate()
         liveStatsTimer = nil
+        HotkeyManager.shared.stop()
 
         MainActor.assumeIsolated {
             MouseTracker.shared.persistData()
