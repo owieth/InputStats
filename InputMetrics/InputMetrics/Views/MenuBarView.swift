@@ -357,6 +357,27 @@ struct MenuBarView: View {
             .cornerRadius(12)
             .padding(.horizontal)
 
+            // Peak Typing Speed Card
+            if viewModel.peakWPM > 0 {
+                VStack(alignment: .leading, spacing: 8) {
+                    Image(systemName: "gauge.with.needle")
+                        .font(.title2)
+                        .foregroundStyle(.orange)
+
+                    Text(String(format: "%.0f WPM", viewModel.peakWPM))
+                        .font(.title.bold())
+
+                    Text("Peak Typing Speed")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.secondary.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal)
+            }
+
             // Week Overview Chart
             VStack(alignment: .leading, spacing: 8) {
                 Text("Week Overview")
