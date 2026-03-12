@@ -348,6 +348,31 @@ struct SettingsView: View {
         fields.map { csvField($0) }.joined(separator: ",")
     }
 
+    private func generateJSON() -> String {
+        struct ExportData: Codable {
+            let dailySummaries: [DailySummary]
+            let hourlySummaries: [HourlySummary]
+            let mouseHeatmap: [MouseHeatmapEntry]
+            let keyboardHeatmap: [KeyboardEntry]
+        }
+
+        let data = ExportData(
+            dailySummaries: DatabaseManager.shared.getAllDailySummaries(),
+            hourlySummaries: DatabaseManager.shared.getAllHourlySummaries(),
+            mouseHeatmap: DatabaseManager.shared.getAllMouseHeatmapEntries(),
+            keyboardHeatmap: DatabaseManager.shared.getAllKeyboardEntries()
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        guard let jsonData = try? encoder.encode(data),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return "{}"
+        }
+        return jsonString
+    }
+
     private func generateCSV() -> String {
         var lines: [String] = []
 
