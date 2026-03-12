@@ -19,6 +19,9 @@ class EventMonitor {
     private var activeSeconds: TimeInterval = 0
     private let idleThreshold: TimeInterval = 300
 
+    private var appBuffer: [String: (name: String, keystrokes: Int, clicks: Int)] = [:]
+    private var appPersistTimer: Timer?
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -36,6 +39,7 @@ class EventMonitor {
     private init() {}
 
     func start() {
+        startAppTracking()
         if createAndStartEventTap() { return }
 
         AppLogger.events.warning("Event tap creation failed -- accessibility permission likely not granted")
@@ -59,6 +63,9 @@ class EventMonitor {
     }
 
     func stop() {
+        appPersistTimer?.invalidate()
+        appPersistTimer = nil
+        persistAppUsage()
         retryTimer?.invalidate()
         retryTimer = nil
         guard let eventTap = eventTap else { return }
@@ -102,6 +109,28 @@ class EventMonitor {
         CGEvent.tapEnable(tap: tap, enable: true)
         AppLogger.events.info("Event monitoring started")
         return true
+    }
+
+    func startAppTracking() {
+        appPersistTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.persistAppUsage()
+            }
+        }
+    }
+
+    private func persistAppUsage() {
+        let today = DateHelper.todayString()
+        for (bundleId, data) in appBuffer {
+            DatabaseManager.shared.updateAppUsage(
+                date: today,
+                bundleId: bundleId,
+                appName: data.name,
+                keystrokes: data.keystrokes,
+                mouseClicks: data.clicks
+            )
+        }
+        appBuffer.removeAll()
     }
 
     private func startRetryTimer() {
@@ -181,6 +210,24 @@ class EventMonitor {
 
             default:
                 break
+            }
+
+            if let app = NSWorkspace.shared.frontmostApplication,
+               let bundleId = app.bundleIdentifier {
+                let name = app.localizedName ?? bundleId
+                var entry = appBuffer[bundleId] ?? (name: name, keystrokes: 0, clicks: 0)
+                entry.name = name
+
+                switch type {
+                case .keyDown:
+                    entry.keystrokes += 1
+                case .leftMouseDown, .rightMouseDown, .otherMouseDown:
+                    entry.clicks += 1
+                default:
+                    break
+                }
+
+                appBuffer[bundleId] = entry
             }
         }
     }

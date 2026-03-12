@@ -55,6 +55,7 @@ final class DatabaseManager: @unchecked Sendable {
         registerV5Migration(&migrator)
         registerV6Migration(&migrator)
         registerV7Migration(&migrator)
+        registerV8Migration(&migrator)
 
         return migrator
     }
@@ -134,6 +135,20 @@ final class DatabaseManager: @unchecked Sendable {
         migrator.registerMigration("v7") { db in
             try db.alter(table: "daily_summary") { t in
                 t.add(column: "active_minutes", .integer).defaults(to: 0)
+            }
+        }
+    }
+
+    private func registerV8Migration(_ migrator: inout DatabaseMigrator) {
+        migrator.registerMigration("v8") { db in
+            try db.create(table: "app_usage") { t in
+                t.column("date", .text)
+                t.column("bundle_id", .text)
+                t.column("app_name", .text).defaults(to: "")
+                t.column("keystrokes", .integer).defaults(to: 0)
+                t.column("mouse_clicks", .integer).defaults(to: 0)
+                t.column("active_seconds", .integer).defaults(to: 0)
+                t.primaryKey(["date", "bundle_id"])
             }
         }
     }
@@ -447,6 +462,49 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    // MARK: - App Usage Operations
+
+    func updateAppUsage(date: String, bundleId: String, appName: String, keystrokes: Int = 0, mouseClicks: Int = 0, activeSeconds: Int = 0) {
+        guard let db = dbQueue else { return }
+
+        dbQueue_serial.async {
+            do {
+                try db.write { db in
+                    try db.execute(
+                        sql: """
+                            INSERT INTO app_usage (date, bundle_id, app_name, keystrokes, mouse_clicks, active_seconds)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            ON CONFLICT(date, bundle_id) DO UPDATE SET
+                                app_name = excluded.app_name,
+                                keystrokes = keystrokes + excluded.keystrokes,
+                                mouse_clicks = mouse_clicks + excluded.mouse_clicks,
+                                active_seconds = active_seconds + excluded.active_seconds
+                            """,
+                        arguments: [date, bundleId, appName, keystrokes, mouseClicks, activeSeconds]
+                    )
+                }
+            } catch {
+                AppLogger.database.error("Update app usage failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func getAppUsage(date: String) -> [AppUsageEntry] {
+        guard let db = dbQueue else { return [] }
+
+        do {
+            return try db.read { db in
+                try AppUsageEntry
+                    .filter(AppUsageEntry.Columns.date == date)
+                    .order(AppUsageEntry.Columns.keystrokes.desc)
+                    .fetchAll(db)
+            }
+        } catch {
+            AppLogger.database.error("Fetch app usage failed: \(error.localizedDescription)")
+            return []
+        }
+    }
+
     // MARK: - Aggregated Totals
 
     struct AllTimeTotals {
@@ -609,6 +667,7 @@ final class DatabaseManager: @unchecked Sendable {
                     try db.execute(sql: "DELETE FROM \(MouseHeatmapEntry.databaseTableName)")
                     try db.execute(sql: "DELETE FROM \(KeyboardEntry.databaseTableName)")
                     try db.execute(sql: "DELETE FROM \(HourlySummary.databaseTableName)")
+                    try db.execute(sql: "DELETE FROM \(AppUsageEntry.databaseTableName)")
                 }
                 AppLogger.database.info("All data reset")
             } catch {
@@ -637,6 +696,7 @@ final class DatabaseManager: @unchecked Sendable {
                     try db.execute(sql: "DELETE FROM mouse_heatmap WHERE date < ?", arguments: [cutoffString])
                     try db.execute(sql: "DELETE FROM keyboard_heatmap WHERE date < ?", arguments: [cutoffString])
                     try db.execute(sql: "DELETE FROM hourly_summary WHERE date < ?", arguments: [cutoffString])
+                    try db.execute(sql: "DELETE FROM app_usage WHERE date < ?", arguments: [cutoffString])
                     try db.execute(sql: "VACUUM")
                 }
                 AppLogger.database.info("Pruned data older than \(cutoffString)")
