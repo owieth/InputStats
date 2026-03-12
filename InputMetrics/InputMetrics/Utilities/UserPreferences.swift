@@ -43,6 +43,12 @@ class UserPreferences: ObservableObject {
         }
     }
 
+    @Published var hotkeyEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(hotkeyEnabled, forKey: "hotkeyEnabled")
+        }
+    }
+
     @Published var dataRetentionPeriod: DataRetentionPeriod {
         didSet {
             UserDefaults.standard.set(dataRetentionPeriod.rawValue, forKey: "dataRetentionPeriod")
@@ -53,6 +59,7 @@ class UserPreferences: ObservableObject {
         let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? DistanceUnit.metric.rawValue
         self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .metric
         self.showLiveStats = UserDefaults.standard.object(forKey: "showLiveStats") as? Bool ?? true
+        self.hotkeyEnabled = UserDefaults.standard.object(forKey: "hotkeyEnabled") as? Bool ?? true
 
         let savedRetention = UserDefaults.standard.string(forKey: "dataRetentionPeriod") ?? "forever"
         self.dataRetentionPeriod = DataRetentionPeriod(rawValue: savedRetention) ?? .forever
