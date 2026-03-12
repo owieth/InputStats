@@ -55,6 +55,14 @@ class UserPreferences: ObservableObject {
         }
     }
 
+    @Published var goalConfig: GoalConfig {
+        didSet {
+            if let data = try? JSONEncoder().encode(goalConfig) {
+                UserDefaults.standard.set(data, forKey: "goalConfig")
+            }
+        }
+    }
+
     private init() {
         let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? DistanceUnit.metric.rawValue
         self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .metric
@@ -63,5 +71,12 @@ class UserPreferences: ObservableObject {
 
         let savedRetention = UserDefaults.standard.string(forKey: "dataRetentionPeriod") ?? "forever"
         self.dataRetentionPeriod = DataRetentionPeriod(rawValue: savedRetention) ?? .forever
+
+        if let data = UserDefaults.standard.data(forKey: "goalConfig"),
+           let config = try? JSONDecoder().decode(GoalConfig.self, from: data) {
+            self.goalConfig = config
+        } else {
+            self.goalConfig = .default
+        }
     }
 }
