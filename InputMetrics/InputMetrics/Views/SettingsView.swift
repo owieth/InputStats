@@ -1,5 +1,11 @@
 import SwiftUI
 import LaunchAtLogin
+import UniformTypeIdentifiers
+
+enum ExportFormat: String, CaseIterable {
+    case csv = "CSV"
+    case json = "JSON"
+}
 
 enum ExportResult {
     case success(String)
@@ -31,6 +37,7 @@ struct SettingsView: View {
     @State private var showResetConfirmation = false
     @State private var exportResult: ExportResult?
     @State private var showExportToast = false
+    @State private var exportFormat: ExportFormat = .csv
     @State private var databaseSize: String = "Calculating..."
     @State private var totalRecords: Int = 0
 
@@ -164,6 +171,21 @@ struct SettingsView: View {
                     // Data Section
                     SettingsSectionView(title: "Data", icon: "externaldrive") {
                         VStack(spacing: 12) {
+                            SettingsRowView {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Label("Export format", systemImage: "doc")
+                                        .font(.body)
+
+                                    Picker("", selection: $exportFormat) {
+                                        ForEach(ExportFormat.allCases, id: \.self) { format in
+                                            Text(format.rawValue).tag(format)
+                                        }
+                                    }
+                                    .pickerStyle(.segmented)
+                                    .labelsHidden()
+                                }
+                            }
+
                             Button(action: {
                                 exportData()
                             }) {
@@ -177,7 +199,7 @@ struct SettingsView: View {
                                             .font(.body.weight(.medium))
                                             .foregroundStyle(.primary)
 
-                                        Text("Save your metrics as CSV")
+                                        Text("Save your metrics as \(exportFormat.rawValue)")
                                             .font(.caption)
                                             .foregroundStyle(.secondary)
                                     }
@@ -321,15 +343,21 @@ struct SettingsView: View {
 
     private func exportData() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "InputMetrics-Export.csv"
+        let fileExtension = exportFormat == .csv ? "csv" : "json"
+        panel.nameFieldStringValue = "InputMetrics-Export.\(fileExtension)"
         panel.canCreateDirectories = true
-        panel.allowedContentTypes = [.commaSeparatedText]
+
+        if exportFormat == .csv {
+            panel.allowedContentTypes = [.commaSeparatedText]
+        } else {
+            panel.allowedContentTypes = [.json]
+        }
 
         panel.begin { response in
             if response == .OK, let url = panel.url {
                 do {
-                    let csvContent = generateCSV()
-                    try csvContent.write(to: url, atomically: true, encoding: .utf8)
+                    let content = exportFormat == .csv ? generateCSV() : generateJSON()
+                    try content.write(to: url, atomically: true, encoding: .utf8)
                     exportResult = .success("Data exported to \(url.lastPathComponent)")
                 } catch {
                     exportResult = .failure("Export failed: \(error.localizedDescription)")
@@ -345,6 +373,31 @@ struct SettingsView: View {
 
     private func csvRow(_ fields: [String]) -> String {
         fields.map { csvField($0) }.joined(separator: ",")
+    }
+
+    private func generateJSON() -> String {
+        struct ExportData: Codable {
+            let dailySummaries: [DailySummary]
+            let hourlySummaries: [HourlySummary]
+            let mouseHeatmap: [MouseHeatmapEntry]
+            let keyboardHeatmap: [KeyboardEntry]
+        }
+
+        let data = ExportData(
+            dailySummaries: DatabaseManager.shared.getAllDailySummaries(),
+            hourlySummaries: DatabaseManager.shared.getAllHourlySummaries(),
+            mouseHeatmap: DatabaseManager.shared.getAllMouseHeatmapEntries(),
+            keyboardHeatmap: DatabaseManager.shared.getAllKeyboardEntries()
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        guard let jsonData = try? encoder.encode(data),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return "{}"
+        }
+        return jsonString
     }
 
     private func generateCSV() -> String {
