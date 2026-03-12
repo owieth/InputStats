@@ -541,6 +541,51 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    // MARK: - Backup & Restore
+
+    func getDatabasePath() -> URL? {
+        let fileManager = FileManager.default
+        guard let appSupport = try? fileManager.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        ) else { return nil }
+        return appSupport
+            .appendingPathComponent("InputMetrics", isDirectory: true)
+            .appendingPathComponent("metrics.db")
+    }
+
+    func backupDatabase(to url: URL) throws {
+        guard let db = dbQueue else {
+            throw NSError(domain: "InputMetrics", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not ready"])
+        }
+        try db.backup(to: DatabaseQueue(path: url.path))
+    }
+
+    func restoreDatabase(from url: URL) throws {
+        guard dbQueue != nil else {
+            throw NSError(domain: "InputMetrics", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not ready"])
+        }
+
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: url.path) else {
+            throw NSError(domain: "InputMetrics", code: 2, userInfo: [NSLocalizedDescriptionKey: "Backup file not found"])
+        }
+
+        // Verify the backup is a valid SQLite database with expected tables
+        let backupDb = try DatabaseQueue(path: url.path)
+        _ = try backupDb.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM daily_summary")
+        }
+
+        // Restore by copying backup contents into the current database
+        try backupDb.backup(to: dbQueue!)
+
+        // Re-run migrations in case the backup is from an older schema
+        try migrator.migrate(dbQueue!)
+    }
+
     // MARK: - Utility
 
     func resetAllData() {

@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import LaunchAtLogin
 import UniformTypeIdentifiers
 
@@ -35,6 +36,7 @@ enum ExportResult {
 struct SettingsView: View {
     @ObservedObject private var preferences = UserPreferences.shared
     @State private var showResetConfirmation = false
+    @State private var showRestoreConfirmation = false
     @State private var exportResult: ExportResult?
     @State private var showExportToast = false
     @State private var exportFormat: ExportFormat = .csv
@@ -217,6 +219,66 @@ struct SettingsView: View {
                             .buttonStyle(.plain)
 
                             Button(action: {
+                                backupDatabase()
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.down.doc")
+                                        .font(.title3)
+                                        .foregroundStyle(.blue)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Backup database")
+                                            .font(.body.weight(.medium))
+                                            .foregroundStyle(.primary)
+
+                                        Text("Save a full copy of your database")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .padding()
+                                .background(Color.blue.opacity(0.1))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(action: {
+                                showRestoreConfirmation = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "arrow.up.doc")
+                                        .font(.title3)
+                                        .foregroundStyle(.orange)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Restore database")
+                                            .font(.body.weight(.medium))
+                                            .foregroundStyle(.primary)
+
+                                        Text("Replace current data from a backup")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .padding()
+                                .background(Color.orange.opacity(0.1))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+
+                            Button(action: {
                                 showResetConfirmation = true
                             }) {
                                 HStack {
@@ -318,6 +380,14 @@ struct SettingsView: View {
             }
         } message: {
             Text("This will permanently delete all tracking data. This action cannot be undone.")
+        }
+        .alert("Restore database?", isPresented: $showRestoreConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Restore", role: .destructive) {
+                restoreDatabase()
+            }
+        } message: {
+            Text("This will replace all current data with the backup. This action cannot be undone.")
         }
         .onAppear {
             refreshDatabaseInfo()
@@ -451,6 +521,43 @@ struct SettingsView: View {
         }
 
         return lines.joined(separator: "\n") + "\n"
+    }
+
+    private func backupDatabase() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "InputMetrics-Backup.db"
+        panel.canCreateDirectories = true
+        panel.allowedContentTypes = [UTType(filenameExtension: "db") ?? .database]
+
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                do {
+                    try DatabaseManager.shared.backupDatabase(to: url)
+                    exportResult = .success("Database backed up successfully")
+                } catch {
+                    exportResult = .failure("Backup failed: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    private func restoreDatabase() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: "db") ?? .database]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                do {
+                    try DatabaseManager.shared.restoreDatabase(from: url)
+                    exportResult = .success("Database restored successfully")
+                    refreshDatabaseInfo()
+                } catch {
+                    exportResult = .failure("Restore failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     private func resetData() {
