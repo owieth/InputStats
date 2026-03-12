@@ -227,6 +227,26 @@ struct SettingsView: View {
                         .padding(.horizontal)
                     }
 
+                    #if DEBUG
+                    SettingsSectionView(title: "Debug", icon: "ladybug") {
+                        SettingsRowView {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Log viewer", systemImage: "doc.text")
+                                    .font(.body)
+
+                                Text("View logs in Console.app with subsystem: com.inputmetrics.app")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Button("Open Console") {
+                                    NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Console.app"))
+                                }
+                                .buttonStyle(.link)
+                            }
+                        }
+                    }
+                    #endif
+
                     // Footer
                     VStack(spacing: 4) {
                         Text("InputMetrics")
