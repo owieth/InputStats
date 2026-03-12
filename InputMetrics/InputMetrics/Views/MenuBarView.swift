@@ -78,6 +78,50 @@ struct MenuBarView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
 
+                    if UserPreferences.shared.goalConfig.enabled {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("Goals")
+                                    .font(.headline)
+                                Spacer()
+                                if viewModel.currentStreak > 0 {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "flame.fill")
+                                            .foregroundStyle(.orange)
+                                        Text("\(viewModel.currentStreak) day streak")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+
+                            VStack(spacing: 6) {
+                                HStack {
+                                    Image(systemName: "keyboard")
+                                        .foregroundStyle(.purple)
+                                    ProgressView(value: viewModel.keystrokeProgress)
+                                        .tint(.purple)
+                                    Text("\(Int(viewModel.keystrokeProgress * 100))%")
+                                        .font(.caption)
+                                        .monospacedDigit()
+                                        .frame(width: 40, alignment: .trailing)
+                                }
+
+                                HStack {
+                                    Image(systemName: "arrow.up.right")
+                                        .foregroundStyle(.blue)
+                                    ProgressView(value: viewModel.distanceProgress)
+                                        .tint(.blue)
+                                    Text("\(Int(viewModel.distanceProgress * 100))%")
+                                        .font(.caption)
+                                        .monospacedDigit()
+                                        .frame(width: 40, alignment: .trailing)
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+
                     if viewModel.selectedTab == .mouse {
                         mouseMetricsView
                     } else {
