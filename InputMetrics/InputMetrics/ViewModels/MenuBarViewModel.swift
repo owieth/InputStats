@@ -24,6 +24,8 @@ final class MenuBarViewModel {
     var allTimeKeystrokes: Int = 0
     var allTimeScrollVertical: Double = 0
     var allTimeScrollHorizontal: Double = 0
+    var firstActiveAt: String?
+    var lastActiveAt: String?
     private var cachedTotals: DatabaseManager.AllTimeTotals = .zero
     private var lastCacheTime: Date = .distantPast
     private let cacheInterval: TimeInterval = 30
@@ -50,6 +52,8 @@ final class MenuBarViewModel {
         let keyboardStats = KeyboardTracker.shared.getCurrentKeystrokes()
         let today = todayString()
 
+        let liveActivity = EventMonitor.shared.getActivityTimes()
+
         if let summary = DatabaseManager.shared.getDailySummary(date: today) {
             mouseDistance = summary.mouseDistancePx + mouseStats.distance
             keystrokes = summary.keystrokes + keyboardStats
@@ -58,6 +62,8 @@ final class MenuBarViewModel {
             middleClicks = summary.mouseClicksMiddle + mouseStats.middle
             scrollVertical = summary.scrollDistanceVertical + mouseStats.scrollV
             scrollHorizontal = summary.scrollDistanceHorizontal + mouseStats.scrollH
+            firstActiveAt = summary.firstActiveAt ?? liveActivity.first
+            lastActiveAt = liveActivity.last ?? summary.lastActiveAt
         } else {
             mouseDistance = mouseStats.distance
             keystrokes = keyboardStats
@@ -66,6 +72,8 @@ final class MenuBarViewModel {
             middleClicks = mouseStats.middle
             scrollVertical = mouseStats.scrollV
             scrollHorizontal = mouseStats.scrollH
+            firstActiveAt = liveActivity.first
+            lastActiveAt = liveActivity.last
         }
     }
 
@@ -123,7 +131,9 @@ final class MenuBarViewModel {
                 mouseClicksMiddle: mouseStats.middle,
                 keystrokes: keyboardStats,
                 scrollDistanceVertical: mouseStats.scrollV,
-                scrollDistanceHorizontal: mouseStats.scrollH
+                scrollDistanceHorizontal: mouseStats.scrollH,
+                firstActiveAt: nil,
+                lastActiveAt: nil
             ))
         }
     }

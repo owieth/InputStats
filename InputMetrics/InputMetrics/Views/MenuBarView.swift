@@ -43,6 +43,33 @@ struct MenuBarView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
 
+                    // Active Time Card
+                    HStack(spacing: 8) {
+                        Image(systemName: "clock")
+                            .font(.title3)
+                            .foregroundStyle(.teal)
+
+                        if let first = viewModel.firstActiveAt,
+                           let last = viewModel.lastActiveAt {
+                            Text("\(first) - \(last)")
+                                .font(.headline.monospacedDigit())
+                        } else {
+                            Text("No activity yet")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Text("Active Time")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(Color.secondary.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+
                     if viewModel.selectedTab == .mouse {
                         mouseMetricsView
                     } else {

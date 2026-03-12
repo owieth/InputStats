@@ -52,6 +52,7 @@ final class DatabaseManager: @unchecked Sendable {
         registerV3Migration(&migrator)
         registerV4Migration(&migrator)
         registerV5Migration(&migrator)
+        registerV6Migration(&migrator)
 
         return migrator
     }
@@ -118,6 +119,15 @@ final class DatabaseManager: @unchecked Sendable {
         }
     }
 
+    private func registerV6Migration(_ migrator: inout DatabaseMigrator) {
+        migrator.registerMigration("v6") { db in
+            try db.alter(table: "daily_summary") { t in
+                t.add(column: "first_active_at", .text)
+                t.add(column: "last_active_at", .text)
+            }
+        }
+    }
+
     // MARK: - Daily Summary Operations
 
     func updateDailySummary(
@@ -128,7 +138,9 @@ final class DatabaseManager: @unchecked Sendable {
         middleClicks: Int = 0,
         keystrokes: Int = 0,
         scrollVertical: Double = 0,
-        scrollHorizontal: Double = 0
+        scrollHorizontal: Double = 0,
+        firstActiveAt: String? = nil,
+        lastActiveAt: String? = nil
     ) {
         guard let db = dbQueue else { return }
 
@@ -137,8 +149,8 @@ final class DatabaseManager: @unchecked Sendable {
                 try db.write { db in
                     try db.execute(
                         sql: """
-                            INSERT INTO daily_summary (date, mouse_distance_px, mouse_clicks_left, mouse_clicks_right, mouse_clicks_middle, keystrokes, scroll_distance_vertical, scroll_distance_horizontal)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            INSERT INTO daily_summary (date, mouse_distance_px, mouse_clicks_left, mouse_clicks_right, mouse_clicks_middle, keystrokes, scroll_distance_vertical, scroll_distance_horizontal, first_active_at, last_active_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(date) DO UPDATE SET
                                 mouse_distance_px = mouse_distance_px + excluded.mouse_distance_px,
                                 mouse_clicks_left = mouse_clicks_left + excluded.mouse_clicks_left,
@@ -146,9 +158,11 @@ final class DatabaseManager: @unchecked Sendable {
                                 mouse_clicks_middle = mouse_clicks_middle + excluded.mouse_clicks_middle,
                                 keystrokes = keystrokes + excluded.keystrokes,
                                 scroll_distance_vertical = scroll_distance_vertical + excluded.scroll_distance_vertical,
-                                scroll_distance_horizontal = scroll_distance_horizontal + excluded.scroll_distance_horizontal
+                                scroll_distance_horizontal = scroll_distance_horizontal + excluded.scroll_distance_horizontal,
+                                first_active_at = COALESCE(daily_summary.first_active_at, excluded.first_active_at),
+                                last_active_at = COALESCE(excluded.last_active_at, daily_summary.last_active_at)
                             """,
-                        arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes, scrollVertical, scrollHorizontal]
+                        arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes, scrollVertical, scrollHorizontal, firstActiveAt, lastActiveAt]
                     )
                 }
             } catch {

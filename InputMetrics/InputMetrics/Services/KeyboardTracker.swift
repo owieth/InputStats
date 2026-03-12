@@ -41,10 +41,13 @@ class KeyboardTracker {
     func persistData() {
         let today = DateHelper.todayString()
         let currentHour = getCurrentHour()
+        let activityTimes = EventMonitor.shared.getActivityTimes()
 
         DatabaseManager.shared.updateDailySummary(
             date: today,
-            keystrokes: totalKeystrokes
+            keystrokes: totalKeystrokes,
+            firstActiveAt: activityTimes.first,
+            lastActiveAt: activityTimes.last
         )
 
         DatabaseManager.shared.updateHourlySummary(

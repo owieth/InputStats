@@ -10,6 +10,24 @@ class EventMonitor {
     private var retryCount = 0
     private let maxRetries = 30
 
+    private var firstActiveAt: String?
+    private var lastActiveAt: String?
+    private var currentDate: String?
+
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "HH:mm"
+        return f
+    }()
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     private init() {}
 
     func start() {
@@ -100,6 +118,10 @@ class EventMonitor {
         }
     }
 
+    func getActivityTimes() -> (first: String?, last: String?) {
+        (firstActiveAt, lastActiveAt)
+    }
+
     nonisolated private func handleEvent(type: CGEventType, event: CGEvent) {
         let location = event.location
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
@@ -108,6 +130,19 @@ class EventMonitor {
         let scrollDeltaX = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis2)
 
         MainActor.assumeIsolated {
+            let now = Date()
+            let today = Self.dateFormatter.string(from: now)
+            if currentDate != today {
+                firstActiveAt = nil
+                lastActiveAt = nil
+                currentDate = today
+            }
+            let timeString = Self.timeFormatter.string(from: now)
+            if firstActiveAt == nil {
+                firstActiveAt = timeString
+            }
+            lastActiveAt = timeString
+
             switch type {
             case .mouseMoved:
                 MouseTracker.shared.trackMovement(to: location)

@@ -142,6 +142,7 @@ class MouseTracker {
     func persistData() {
         let today = DateHelper.todayString()
         let currentHour = getCurrentHour()
+        let activityTimes = EventMonitor.shared.getActivityTimes()
 
         DatabaseManager.shared.updateDailySummary(
             date: today,
@@ -150,7 +151,9 @@ class MouseTracker {
             rightClicks: rightClicks,
             middleClicks: middleClicks,
             scrollVertical: scrollVertical,
-            scrollHorizontal: scrollHorizontal
+            scrollHorizontal: scrollHorizontal,
+            firstActiveAt: activityTimes.first,
+            lastActiveAt: activityTimes.last
         )
 
         DatabaseManager.shared.updateHourlySummary(
