@@ -1,8 +1,9 @@
 import Foundation
 
 struct Constants {
-    // Distance conversion constants (assuming ~110 DPI average)
-    static let pixelsPerMeter: Double = 4330
+    // Distance conversion constants
+    static let defaultPPI: Double = 110.0
+    static let pixelsPerMeter: Double = 4330 // fallback: ~110 DPI
     static let metersPerKilometer: Double = 1000
 
     // Fun comparison constants

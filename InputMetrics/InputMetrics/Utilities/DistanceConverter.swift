@@ -1,4 +1,6 @@
 import Foundation
+import AppKit
+import CoreGraphics
 
 enum DistanceUnit: String {
     case metric
@@ -6,6 +8,24 @@ enum DistanceUnit: String {
 }
 
 struct DistanceConverter {
+    static func queryDisplayPPI() -> Double {
+        guard let mainScreen = NSScreen.main else { return Constants.defaultPPI }
+        let screenNumber = mainScreen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID ?? CGMainDisplayID()
+
+        let pixelWidth = CGDisplayPixelsWide(screenNumber)
+        let physicalSize = CGDisplayScreenSize(screenNumber) // in mm
+
+        guard physicalSize.width > 0 else { return Constants.defaultPPI }
+
+        let ppi = Double(pixelWidth) / (Double(physicalSize.width) / 25.4)
+        return ppi
+    }
+
+    static func queryPixelsPerMeter() -> Double {
+        let ppi = queryDisplayPPI()
+        return ppi / 0.0254
+    }
+
     static func pixelsToMeters(_ pixels: Double) -> Double {
         return pixels / Constants.pixelsPerMeter
     }
