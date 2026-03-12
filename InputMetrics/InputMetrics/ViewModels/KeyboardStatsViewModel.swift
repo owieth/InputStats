@@ -82,6 +82,41 @@ final class KeyboardStatsViewModel {
                 ))
             }
         }
+
+        if selectedRange == .year {
+            chartData = aggregateByWeek(chartData)
+        }
+    }
+
+    private func aggregateByWeek(_ data: [DailySummary]) -> [DailySummary] {
+        let calendar = Calendar.current
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        var weekGroups: [String: [DailySummary]] = [:]
+
+        for summary in data {
+            guard let date = formatter.date(from: summary.date) else { continue }
+            let weekOfYear = calendar.component(.weekOfYear, from: date)
+            let year = calendar.component(.yearForWeekOfYear, from: date)
+            let weekKey = String(format: "%04d-W%02d", year, weekOfYear)
+            weekGroups[weekKey, default: []].append(summary)
+        }
+
+        return weekGroups.sorted { $0.key < $1.key }.map { (_, summaries) in
+            let firstDate = summaries.first?.date ?? ""
+            return DailySummary(
+                date: firstDate,
+                mouseDistancePx: summaries.reduce(0) { $0 + $1.mouseDistancePx },
+                mouseClicksLeft: summaries.reduce(0) { $0 + $1.mouseClicksLeft },
+                mouseClicksRight: summaries.reduce(0) { $0 + $1.mouseClicksRight },
+                mouseClicksMiddle: summaries.reduce(0) { $0 + $1.mouseClicksMiddle },
+                keystrokes: summaries.reduce(0) { $0 + $1.keystrokes },
+                scrollDistanceVertical: summaries.reduce(0) { $0 + $1.scrollDistanceVertical },
+                scrollDistanceHorizontal: summaries.reduce(0) { $0 + $1.scrollDistanceHorizontal }
+            )
+        }
     }
 
     func loadKeyboardData() {
