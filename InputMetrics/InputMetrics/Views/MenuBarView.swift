@@ -32,6 +32,14 @@ struct MenuBarView: View {
                 .labelsHidden()
 
                 Spacer()
+
+                Button(action: {
+                    WindowManager.shared.openDashboardWindow()
+                }) {
+                    Image(systemName: "macwindow")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Dashboard")
             }
             .padding()
 
