@@ -17,6 +17,7 @@ final class MenuBarViewModel {
     var chartData: [DailySummary] = []
     var heatmapData: [[Int]] = []
     var keyboardEntries: [KeyboardEntry] = []
+    var hourlySummaries: [HourlySummary] = []
     var scrollVertical: Double = 0
     var scrollHorizontal: Double = 0
     var allTimeDistance: Double = 0
@@ -41,6 +42,7 @@ final class MenuBarViewModel {
         loadChartData()
         loadHeatmapData()
         loadKeyboardData()
+        loadHourlySummaries()
         refreshCachedTotals()
         updateAllTimeStats()
     }
@@ -145,6 +147,11 @@ final class MenuBarViewModel {
     func loadKeyboardData() {
         let today = todayString()
         keyboardEntries = DatabaseManager.shared.getKeyboardEntries(date: today)
+    }
+
+    func loadHourlySummaries() {
+        let today = todayString()
+        hourlySummaries = DatabaseManager.shared.getHourlySummaries(date: today)
     }
 
     func chartDistance(_ pixels: Double, unit: DistanceUnit) -> Double {
