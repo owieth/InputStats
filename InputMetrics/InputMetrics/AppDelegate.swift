@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     private var liveStatsTimer: Timer?
+    private var milestoneTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Initialize database
@@ -67,6 +68,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Start live stats timer
         startLiveStatsTimer()
 
+        // Setup notifications if enabled
+        if UserPreferences.shared.notificationsEnabled {
+            NotificationManager.shared.requestPermission()
+            NotificationManager.shared.scheduleDailySummary()
+        }
+
+        // Start milestone check timer
+        startMilestoneCheckTimer()
+
         AppLogger.general.info("App launched")
     }
 
@@ -117,6 +127,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         liveStatsTimer?.invalidate()
         liveStatsTimer = nil
         HotkeyManager.shared.stop()
+        milestoneTimer?.invalidate()
+        milestoneTimer = nil
 
         MainActor.assumeIsolated {
             MouseTracker.shared.persistData()
@@ -131,6 +143,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         liveStatsTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updateLiveStats()
+            }
+        }
+    }
+
+    private func startMilestoneCheckTimer() {
+        milestoneTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+            Task { @MainActor in
+                NotificationManager.shared.checkMilestones()
             }
         }
     }

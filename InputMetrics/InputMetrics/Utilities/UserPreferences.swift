@@ -63,6 +63,12 @@ class UserPreferences: ObservableObject {
         }
     }
 
+    @Published var notificationsEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled")
+        }
+    }
+
     private init() {
         let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? DistanceUnit.metric.rawValue
         self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .metric
@@ -78,5 +84,7 @@ class UserPreferences: ObservableObject {
         } else {
             self.goalConfig = .default
         }
+
+        self.notificationsEnabled = UserDefaults.standard.object(forKey: "notificationsEnabled") as? Bool ?? false
     }
 }

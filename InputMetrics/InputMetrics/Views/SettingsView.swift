@@ -186,6 +186,27 @@ struct SettingsView: View {
                         }
                     }
 
+                    // Notifications Section
+                    SettingsSectionView(title: "Notifications", icon: "bell") {
+                        VStack(spacing: 0) {
+                            SettingsRowView {
+                                HStack {
+                                    Label("Enable notifications", systemImage: "bell.badge")
+                                        .font(.body)
+                                    Spacer()
+                                    Toggle("", isOn: $preferences.notificationsEnabled)
+                                        .labelsHidden()
+                                        .onChange(of: preferences.notificationsEnabled) { _, enabled in
+                                            if enabled {
+                                                NotificationManager.shared.requestPermission()
+                                                NotificationManager.shared.scheduleDailySummary()
+                                            }
+                                        }
+                                }
+                            }
+                        }
+                    }
+
                     // Storage Section
                     SettingsSectionView(title: "Storage", icon: "internaldrive") {
                         VStack(spacing: 0) {
