@@ -203,8 +203,8 @@ final class DatabaseManager: @unchecked Sendable {
                                 last_active_at = COALESCE(excluded.last_active_at, daily_summary.last_active_at),
                                 active_minutes = active_minutes + excluded.active_minutes,
                                 avg_mouse_speed = CASE WHEN excluded.avg_mouse_speed > 0 THEN excluded.avg_mouse_speed ELSE daily_summary.avg_mouse_speed END,
-                                peak_mouse_speed = MAX(daily_summary.peak_mouse_speed, excluded.peak_mouse_speed),
-                                peak_wpm = MAX(daily_summary.peak_wpm, excluded.peak_wpm)
+                                peak_mouse_speed = CASE WHEN excluded.peak_mouse_speed > daily_summary.peak_mouse_speed THEN excluded.peak_mouse_speed ELSE daily_summary.peak_mouse_speed END,
+                                peak_wpm = CASE WHEN excluded.peak_wpm > daily_summary.peak_wpm THEN excluded.peak_wpm ELSE daily_summary.peak_wpm END
                             """,
                         arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes, scrollVertical, scrollHorizontal, firstActiveAt, lastActiveAt, activeMinutes, avgMouseSpeed, peakMouseSpeed, peakWPM]
                     )
