@@ -78,13 +78,13 @@ jobs:
               find "$TMPDIR" -type f -perm +111 ! -name "*.dylib" | while read -r binary; do
                 file "$binary" | grep -q "Mach-O" && \
                   codesign --force --sign "$IDENTITY" --timestamp --options runtime \
-                    --entitlements /dev/null "$binary"
+                    "$binary"
               done
 
               # Re-sign .app bundles
               find "$TMPDIR" -name "*.app" -type d | while read -r app; do
                 codesign --force --deep --sign "$IDENTITY" --timestamp --options runtime \
-                  --entitlements /dev/null "$app"
+                  "$app"
               done
 
               # Repackage zip
