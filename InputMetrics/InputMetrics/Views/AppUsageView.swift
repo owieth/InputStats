@@ -21,6 +21,8 @@ struct AppUsageView: View {
                     )
                     .foregroundStyle(.blue)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("App usage chart showing activity for top \(topApps.count) apps")
                 .frame(height: CGFloat(topApps.count * 28))
             }
         }

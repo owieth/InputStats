@@ -12,6 +12,7 @@ struct KeyboardStatsView: View {
                     Image(systemName: "chevron.left")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Previous day")
 
                 DatePicker("", selection: $viewModel.selectedDate, displayedComponents: .date)
                     .labelsHidden()
@@ -23,6 +24,7 @@ struct KeyboardStatsView: View {
                     Image(systemName: "chevron.right")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Next day")
                 .disabled(Calendar.current.isDateInToday(viewModel.selectedDate))
 
                 if !Calendar.current.isDateInToday(viewModel.selectedDate) {
@@ -59,6 +61,8 @@ struct KeyboardStatsView: View {
 
             // Keyboard heatmap
             KeyboardHeatmapView(entries: viewModel.keyboardEntries)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Keyboard heatmap showing key usage frequency")
                 .padding()
 
             // Top keys

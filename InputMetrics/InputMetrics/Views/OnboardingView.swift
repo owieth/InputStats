@@ -52,6 +52,8 @@ struct OnboardingView: View {
                         .frame(width: 8, height: 8)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Step \(currentStep + 1) of \(steps.count)")
 
             // Navigation
             HStack {

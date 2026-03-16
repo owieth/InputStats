@@ -63,6 +63,8 @@ struct ChartView: View {
                             }
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(chartTitle) chart for \(range == .week ? "this week" : range == .month ? "this month" : "this year")")
                 .chartYAxisLabel(yAxisLabel)
                 .chartOverlay { proxy in
                     GeometryReader { geometry in

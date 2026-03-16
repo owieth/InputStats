@@ -40,6 +40,8 @@ struct HourlyBreakdownView: View {
                         }
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Hourly breakdown chart showing keystrokes and clicks by hour")
                 .frame(height: 120)
             }
         }

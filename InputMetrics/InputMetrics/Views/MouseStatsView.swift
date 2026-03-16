@@ -12,6 +12,7 @@ struct MouseStatsView: View {
                     Image(systemName: "chevron.left")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Previous day")
 
                 DatePicker("", selection: $viewModel.selectedDate, displayedComponents: .date)
                     .labelsHidden()
@@ -23,6 +24,7 @@ struct MouseStatsView: View {
                     Image(systemName: "chevron.right")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Next day")
                 .disabled(Calendar.current.isDateInToday(viewModel.selectedDate))
 
                 if !Calendar.current.isDateInToday(viewModel.selectedDate) {

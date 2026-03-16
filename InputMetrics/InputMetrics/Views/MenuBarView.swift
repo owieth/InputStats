@@ -138,6 +138,8 @@ struct MenuBarView: View {
                                         .foregroundStyle(.purple)
                                     ProgressView(value: viewModel.keystrokeProgress)
                                         .tint(.purple)
+                                        .accessibilityLabel("Keystroke goal progress")
+                                        .accessibilityValue("\(Int(viewModel.keystrokeProgress * 100)) percent")
                                     Text("\(Int(viewModel.keystrokeProgress * 100))%")
                                         .font(.caption)
                                         .monospacedDigit()
@@ -149,6 +151,8 @@ struct MenuBarView: View {
                                         .foregroundStyle(.blue)
                                     ProgressView(value: viewModel.distanceProgress)
                                         .tint(.blue)
+                                        .accessibilityLabel("Distance goal progress")
+                                        .accessibilityValue("\(Int(viewModel.distanceProgress * 100)) percent")
                                     Text("\(Int(viewModel.distanceProgress * 100))%")
                                         .font(.caption)
                                         .monospacedDigit()
@@ -213,6 +217,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Distance: \(DistanceConverter.formatDistance(viewModel.mouseDistance, unit: preferences.distanceUnit))")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.secondary.opacity(0.1))
@@ -231,6 +237,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Clicks: \(viewModel.totalClicks)")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.secondary.opacity(0.1))
@@ -255,6 +263,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Scroll: \(String(format: "%.0f pixels", viewModel.scrollVertical + viewModel.scrollHorizontal))")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.secondary.opacity(0.1))
@@ -275,6 +285,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Active time: \(viewModel.activeMinutes / 60) hours \(viewModel.activeMinutes % 60) minutes")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.secondary.opacity(0.1))
@@ -349,6 +361,8 @@ struct MenuBarView: View {
                                 }
                         }
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Weekly mouse distance chart")
                     .padding(.horizontal)
                 } else {
                     Text("No data yet")
@@ -362,6 +376,8 @@ struct MenuBarView: View {
                 DisclosureGroup("Mouse Heatmap") {
                     if !viewModel.heatmapData.isEmpty {
                         HeatmapCanvas(data: viewModel.heatmapData)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("Mouse click heatmap showing click distribution")
                             .frame(height: 200)
                             .padding(.top, 8)
                     } else {
@@ -390,6 +406,8 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Keystrokes today: \(viewModel.keystrokes)")
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .background(Color.secondary.opacity(0.1))
@@ -410,6 +428,8 @@ struct MenuBarView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Peak typing speed: \(String(format: "%.0f", viewModel.peakWPM)) words per minute")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.secondary.opacity(0.1))
@@ -482,6 +502,8 @@ struct MenuBarView: View {
                                 }
                         }
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Weekly keystrokes chart")
                     .padding(.horizontal)
                 } else {
                     Text("No data yet")
@@ -495,6 +517,8 @@ struct MenuBarView: View {
                 DisclosureGroup("Keyboard Heatmap") {
                     if !viewModel.keyboardEntries.isEmpty {
                         MiniKeyboardHeatmap(entries: viewModel.keyboardEntries)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("Keyboard heatmap showing key usage frequency")
                             .frame(height: 150)
                             .padding(.top, 8)
                     } else {
@@ -573,6 +597,8 @@ struct MenuBarView: View {
                     Text(DistanceConverter.formatDistance(viewModel.allTimeDistance, unit: preferences.distanceUnit))
                         .font(.title2.bold().monospacedDigit())
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("All-time distance: \(DistanceConverter.formatDistance(viewModel.allTimeDistance, unit: preferences.distanceUnit))")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.blue.opacity(0.1))
@@ -587,6 +613,8 @@ struct MenuBarView: View {
                     Text("\(viewModel.allTimeClicks)")
                         .font(.title2.bold().monospacedDigit())
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("All-time clicks: \(viewModel.allTimeClicks)")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.green.opacity(0.1))
@@ -601,6 +629,8 @@ struct MenuBarView: View {
                     Text("\(viewModel.allTimeKeystrokes)")
                         .font(.title2.bold().monospacedDigit())
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("All-time keystrokes: \(viewModel.allTimeKeystrokes)")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.purple.opacity(0.1))
@@ -621,6 +651,8 @@ struct MenuBarView: View {
                             .font(.title2.bold().monospacedDigit())
                     }
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("All-time scroll: \(String(format: "%.0f pixels", viewModel.allTimeScrollVertical + viewModel.allTimeScrollHorizontal))")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.orange.opacity(0.1))
