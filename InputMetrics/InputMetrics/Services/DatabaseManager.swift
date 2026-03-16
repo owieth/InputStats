@@ -1,5 +1,6 @@
 import Foundation
 import GRDB
+import WidgetKit
 import os
 
 final class DatabaseManager: @unchecked Sendable {
@@ -8,6 +9,7 @@ final class DatabaseManager: @unchecked Sendable {
     private var dbQueue: DatabaseQueue?
     private let dbQueue_serial = DispatchQueue(label: "com.inputmetrics.database", qos: .userInitiated)
     private(set) var initializationError: String?
+    private var lastWidgetReload: Date = .distantPast
 
     var isReady: Bool { dbQueue != nil }
 
@@ -18,17 +20,19 @@ final class DatabaseManager: @unchecked Sendable {
     private func setupDatabase() {
         do {
             let fileManager = FileManager.default
-            let appSupport = try fileManager.url(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask,
-                appropriateFor: nil,
-                create: true
-            )
 
-            let dbFolder = appSupport.appendingPathComponent("InputMetrics", isDirectory: true)
-            try fileManager.createDirectory(at: dbFolder, withIntermediateDirectories: true)
+            guard let containerURL = fileManager.containerURL(
+                forSecurityApplicationGroupIdentifier: WidgetDataProvider.appGroupID
+            ) else {
+                initializationError = "Failed to access App Group container"
+                AppLogger.database.error("Failed to access App Group container")
+                return
+            }
 
-            let dbPath = dbFolder.appendingPathComponent("metrics.db").path
+            try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
+            migrateOldDatabaseIfNeeded(to: containerURL)
+
+            let dbPath = containerURL.appendingPathComponent("metrics.db").path
             AppLogger.database.info("Database path: \(dbPath)")
 
             dbQueue = try DatabaseQueue(path: dbPath)
@@ -39,6 +43,40 @@ final class DatabaseManager: @unchecked Sendable {
             initializationError = "Database setup failed: \(error.localizedDescription)"
             AppLogger.database.error("Setup failed: \(error.localizedDescription)")
         }
+    }
+
+    private func migrateOldDatabaseIfNeeded(to containerURL: URL) {
+        let fileManager = FileManager.default
+        let newPath = containerURL.appendingPathComponent("metrics.db")
+
+        guard !fileManager.fileExists(atPath: newPath.path) else { return }
+
+        guard let appSupport = try? fileManager.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: false
+        ) else { return }
+
+        let oldPath = appSupport
+            .appendingPathComponent("InputMetrics", isDirectory: true)
+            .appendingPathComponent("metrics.db")
+
+        guard fileManager.fileExists(atPath: oldPath.path) else { return }
+
+        do {
+            try fileManager.copyItem(at: oldPath, to: newPath)
+            AppLogger.database.info("Migrated database from Application Support to App Group container")
+        } catch {
+            AppLogger.database.error("Database migration failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func reloadWidgetTimelines() {
+        let now = Date()
+        guard now.timeIntervalSince(lastWidgetReload) >= 60 else { return }
+        lastWidgetReload = now
+        WidgetCenter.shared.reloadTimelines(ofKind: "InputMetricsWidget")
     }
 
     private var migrator: DatabaseMigrator {
@@ -209,6 +247,7 @@ final class DatabaseManager: @unchecked Sendable {
                         arguments: [date, mouseDistance, leftClicks, rightClicks, middleClicks, keystrokes, scrollVertical, scrollHorizontal, firstActiveAt, lastActiveAt, activeMinutes, avgMouseSpeed, peakMouseSpeed, peakWPM]
                     )
                 }
+                self.reloadWidgetTimelines()
             } catch {
                 AppLogger.database.error("Update daily summary failed: \(error.localizedDescription)")
             }
@@ -630,16 +669,7 @@ final class DatabaseManager: @unchecked Sendable {
     // MARK: - Backup & Restore
 
     func getDatabasePath() -> URL? {
-        let fileManager = FileManager.default
-        guard let appSupport = try? fileManager.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: false
-        ) else { return nil }
-        return appSupport
-            .appendingPathComponent("InputMetrics", isDirectory: true)
-            .appendingPathComponent("metrics.db")
+        WidgetDataProvider.sharedDatabaseURL()
     }
 
     func backupDatabase(to url: URL) throws {
@@ -774,20 +804,9 @@ final class DatabaseManager: @unchecked Sendable {
     // MARK: - Database Size
 
     func getDatabaseFileSize() -> Int64 {
+        guard let dbURL = WidgetDataProvider.sharedDatabaseURL() else { return 0 }
         do {
-            let fileManager = FileManager.default
-            let appSupport = try fileManager.url(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask,
-                appropriateFor: nil,
-                create: false
-            )
-
-            let dbPath = appSupport
-                .appendingPathComponent("InputMetrics", isDirectory: true)
-                .appendingPathComponent("metrics.db")
-
-            let attributes = try fileManager.attributesOfItem(atPath: dbPath.path)
+            let attributes = try FileManager.default.attributesOfItem(atPath: dbURL.path)
             return attributes[.size] as? Int64 ?? 0
         } catch {
             AppLogger.database.error("Get database file size failed: \(error.localizedDescription)")
