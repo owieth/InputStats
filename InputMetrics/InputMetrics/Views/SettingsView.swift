@@ -1,6 +1,5 @@
+import ServiceManagement
 import SwiftUI
-import UniformTypeIdentifiers
-import LaunchAtLogin
 import UniformTypeIdentifiers
 
 enum ExportFormat: String, CaseIterable {
@@ -35,11 +34,13 @@ enum ExportResult {
 
 struct SettingsView: View {
     @ObservedObject private var preferences = UserPreferences.shared
+    @Environment(\.appearsActive) private var appearsActive
     @State private var showResetConfirmation = false
     @State private var showRestoreConfirmation = false
     @State private var exportResult: ExportResult?
     @State private var showExportToast = false
     @State private var exportFormat: ExportFormat = .csv
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var databaseSize: String = "Calculating..."
     @State private var totalRecords: Int = 0
 
@@ -72,10 +73,19 @@ struct SettingsView: View {
 
                                     Spacer()
 
-                                    LaunchAtLogin.Toggle {
-                                        EmptyView()
-                                    }
-                                    .labelsHidden()
+                                    Toggle("", isOn: $launchAtLogin)
+                                        .labelsHidden()
+                                        .onChange(of: launchAtLogin) { _, enabled in
+                                            do {
+                                                if enabled {
+                                                    try SMAppService.mainApp.register()
+                                                } else {
+                                                    try SMAppService.mainApp.unregister()
+                                                }
+                                            } catch {
+                                                launchAtLogin = SMAppService.mainApp.status == .enabled
+                                            }
+                                        }
                                 }
                             }
 
@@ -503,6 +513,10 @@ struct SettingsView: View {
         }
         .onAppear {
             refreshDatabaseInfo()
+        }
+        .onChange(of: appearsActive) { _, isActive in
+            guard isActive else { return }
+            launchAtLogin = SMAppService.mainApp.status == .enabled
         }
         .onChange(of: exportResult?.message) { oldValue, newValue in
             if newValue != nil {
