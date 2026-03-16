@@ -80,7 +80,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Setup notifications if enabled
         if UserPreferences.shared.notificationsEnabled {
             NotificationManager.shared.requestPermission()
-            NotificationManager.shared.scheduleDailySummary()
+            Task {
+                await NotificationManager.shared.scheduleDailySummary()
+            }
         }
 
         // Start milestone check timer
@@ -229,7 +231,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func startMilestoneCheckTimer() {
         let timer = Timer(timeInterval: 300, repeats: true) { _ in
             Task { @MainActor in
-                NotificationManager.shared.checkMilestones()
+                await NotificationManager.shared.checkMilestones()
             }
         }
         RunLoop.current.add(timer, forMode: .common)

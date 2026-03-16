@@ -16,8 +16,14 @@ class NotificationManager {
         }
     }
 
-    func sendDailySummaryNotification(keystrokes: Int, distance: String, clicks: Int) {
+    private func isAuthorized() async -> Bool {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        return settings.authorizationStatus == .authorized
+    }
+
+    func sendDailySummaryNotification(keystrokes: Int, distance: String, clicks: Int) async {
         guard UserPreferences.shared.notificationsEnabled else { return }
+        guard await isAuthorized() else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "Daily Summary"
@@ -25,11 +31,12 @@ class NotificationManager {
         content.sound = .default
 
         let request = UNNotificationRequest(identifier: "daily-summary-\(DateHelper.todayString())", content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
+        try? await UNUserNotificationCenter.current().add(request)
     }
 
-    func sendMilestoneNotification(title: String, body: String) {
+    func sendMilestoneNotification(title: String, body: String) async {
         guard UserPreferences.shared.notificationsEnabled else { return }
+        guard await isAuthorized() else { return }
 
         let content = UNMutableNotificationContent()
         content.title = title
@@ -37,11 +44,12 @@ class NotificationManager {
         content.sound = .default
 
         let request = UNNotificationRequest(identifier: "milestone-\(UUID().uuidString)", content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
+        try? await UNUserNotificationCenter.current().add(request)
     }
 
-    func scheduleDailySummary() {
+    func scheduleDailySummary() async {
         guard UserPreferences.shared.notificationsEnabled else { return }
+        guard await isAuthorized() else { return }
 
         // Schedule for end of day (6 PM)
         var dateComponents = DateComponents()
@@ -56,11 +64,12 @@ class NotificationManager {
         content.sound = .default
 
         let request = UNNotificationRequest(identifier: "daily-summary-reminder", content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        try? await UNUserNotificationCenter.current().add(request)
     }
 
-    func checkMilestones() {
+    func checkMilestones() async {
         guard UserPreferences.shared.notificationsEnabled else { return }
+        guard await isAuthorized() else { return }
 
         let totals = DatabaseManager.shared.getAllTimeTotals()
         let totalClicks = totals.totalClicks
@@ -73,12 +82,12 @@ class NotificationManager {
         let lastKeystrokeMilestone = UserDefaults.standard.integer(forKey: "lastKeystrokeMilestone")
 
         if let milestone = clickMilestones.first(where: { $0 > lastClickMilestone && totalClicks >= $0 }) {
-            sendMilestoneNotification(title: "Click Milestone!", body: "You've reached \(milestone) total clicks!")
+            await sendMilestoneNotification(title: "Click Milestone!", body: "You've reached \(milestone) total clicks!")
             UserDefaults.standard.set(milestone, forKey: "lastClickMilestone")
         }
 
         if let milestone = keystrokeMilestones.first(where: { $0 > lastKeystrokeMilestone && totalKeystrokes >= $0 }) {
-            sendMilestoneNotification(title: "Keystroke Milestone!", body: "You've reached \(milestone) total keystrokes!")
+            await sendMilestoneNotification(title: "Keystroke Milestone!", body: "You've reached \(milestone) total keystrokes!")
             UserDefaults.standard.set(milestone, forKey: "lastKeystrokeMilestone")
         }
     }

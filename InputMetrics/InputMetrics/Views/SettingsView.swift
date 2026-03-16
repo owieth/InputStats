@@ -208,7 +208,9 @@ struct SettingsView: View {
                                         .onChange(of: preferences.notificationsEnabled) { _, enabled in
                                             if enabled {
                                                 NotificationManager.shared.requestPermission()
-                                                NotificationManager.shared.scheduleDailySummary()
+                                                Task {
+                                                    await NotificationManager.shared.scheduleDailySummary()
+                                                }
                                             }
                                         }
                                 }
