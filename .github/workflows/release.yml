@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  build-and-upload:
+    runs-on: macos-26
+    permissions:
+      contents: write
+
+    env:
+      KEYCHAIN_NAME: build.keychain
+      KEYCHAIN_PASSWORD: temporary
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+
+      - name: Import signing certificate
+        env:
+          CERTIFICATE_P12: ${{ secrets.DEVELOPER_ID_CERTIFICATE_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$CERTIFICATE_P12" | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_NAME"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          security import certificate.p12 -k "$KEYCHAIN_NAME" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          security list-keychains -d user -s "$KEYCHAIN_NAME" login.keychain-db
+          rm certificate.p12
+
+      - name: Resolve package dependencies
+        run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
+
+      - name: Build archive
+        run: |
+          xcodebuild archive \
+            -project InputMetrics.xcodeproj \
+            -scheme InputMetrics \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -archivePath build/InputMetrics.xcarchive
+
+      - name: Export app
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/InputMetrics.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist build/ExportOptions.plist
+
+      - name: Notarize app
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cd build/export
+          zip -r InputMetrics.zip InputMetrics.app
+          xcrun notarytool submit InputMetrics.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_ID_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple InputMetrics.app
+          rm InputMetrics.zip
+
+      - name: Package release
+        run: |
+          TAG=${{ github.event.release.tag_name }}
+          cd build/export
+          zip -r "../../InputMetrics-${TAG}.zip" InputMetrics.app
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${{ github.event.release.tag_name }}
+          gh release upload "$TAG" "InputMetrics-${TAG}.zip" --clobber
+
+      - name: Cleanup keychain
+        if: always()
+        run: security delete-keychain "$KEYCHAIN_NAME" 2>/dev/null || true
