@@ -332,7 +332,7 @@
         <li><strong>Accessibility:</strong> Allows the app to monitor global input events (keyboard and mouse)</li>
         <li><strong>Input Monitoring:</strong> Required by macOS for apps that observe key and pointer events</li>
       </ul>
-      <p>The app runs sandboxed with no other entitlements. If permissions are not granted, InputMetrics will prompt you and open the relevant System Settings pane.</p>
+      <p>The app runs outside the sandbox to enable input event monitoring via CGEventTap. It has no network entitlements and makes zero network requests. If permissions are not granted, InputMetrics will prompt you and open the relevant System Settings pane.</p>
     </section>
 
     <!-- Privacy Policy -->
@@ -369,7 +369,7 @@
       <ul>
         <li>All data is stored exclusively on your device</li>
         <li>The app makes zero network requests &mdash; no analytics, no telemetry, no crash reporting, no update checks</li>
-        <li>The app is sandboxed and has no network entitlements</li>
+        <li>The app runs outside the sandbox (required for CGEventTap) and has no network entitlements</li>
         <li>There is no server, no cloud sync, and no third-party service integration</li>
       </ul>
 
