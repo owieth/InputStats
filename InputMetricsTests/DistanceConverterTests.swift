@@ -3,6 +3,12 @@ import XCTest
 
 final class DistanceConverterTests: XCTestCase {
 
+    private var ppm: Double!
+
+    override func setUp() {
+        ppm = DistanceConverter.currentPixelsPerMeter
+    }
+
     // MARK: - pixelsToMeters
 
     func testPixelsToMetersZero() {
@@ -10,12 +16,11 @@ final class DistanceConverterTests: XCTestCase {
     }
 
     func testPixelsToMetersKnownValue() {
-        // 4330 pixels = 1 meter (Constants.pixelsPerMeter)
-        XCTAssertEqual(DistanceConverter.pixelsToMeters(4330), 1.0, accuracy: 0.001)
+        XCTAssertEqual(DistanceConverter.pixelsToMeters(ppm), 1.0, accuracy: 0.001)
     }
 
     func testPixelsToMetersLargeValue() {
-        let pixels = 43300.0
+        let pixels = ppm * 10
         XCTAssertEqual(DistanceConverter.pixelsToMeters(pixels), 10.0, accuracy: 0.001)
     }
 
@@ -40,7 +45,6 @@ final class DistanceConverterTests: XCTestCase {
     }
 
     func testMetersToFeetOneMeter() {
-        // 1 meter = 1 / 0.3048 feet ~ 3.28084 feet
         XCTAssertEqual(DistanceConverter.metersToFeet(1.0), 3.28084, accuracy: 0.001)
     }
 
@@ -57,35 +61,31 @@ final class DistanceConverterTests: XCTestCase {
     // MARK: - formatDistance (metric)
 
     func testFormatDistanceMetricMeters() {
-        // Small distance: should show meters
-        let pixels = 4330.0 * 500 // 500 meters
+        let pixels = ppm * 500
         let result = DistanceConverter.formatDistance(pixels, unit: .metric)
         XCTAssertEqual(result, "500.0 m")
     }
 
     func testFormatDistanceMetricKilometers() {
-        // Large distance: should show kilometers
-        let pixels = 4330.0 * 1500 // 1500 meters = 1.5 km
+        let pixels = ppm * 1500
         let result = DistanceConverter.formatDistance(pixels, unit: .metric)
         XCTAssertEqual(result, "1.50 km")
     }
 
     func testFormatDistanceMetricThreshold() {
-        // Exactly 1000 meters should switch to km
-        let pixels = 4330.0 * 1000
+        let pixels = ppm * 1000
         let result = DistanceConverter.formatDistance(pixels, unit: .metric)
         XCTAssertEqual(result, "1.00 km")
     }
 
     func testFormatDistanceMetricBelowThreshold() {
-        // 999 meters stays in meters
-        let pixels = 4330.0 * 999
+        let pixels = ppm * 999
         let result = DistanceConverter.formatDistance(pixels, unit: .metric)
         XCTAssertTrue(result.hasSuffix(" m"))
     }
 
     func testFormatDistanceDefaultsToMetric() {
-        let pixels = 4330.0 * 100
+        let pixels = ppm * 100
         let result = DistanceConverter.formatDistance(pixels)
         XCTAssertTrue(result.hasSuffix(" m"))
     }
@@ -93,15 +93,13 @@ final class DistanceConverterTests: XCTestCase {
     // MARK: - formatDistance (imperial)
 
     func testFormatDistanceImperialFeet() {
-        // Small distance: should show feet
-        let pixels = 4330.0 * 100 // 100 meters ~ 328 feet
+        let pixels = ppm * 100
         let result = DistanceConverter.formatDistance(pixels, unit: .imperial)
         XCTAssertTrue(result.hasSuffix(" ft"))
     }
 
     func testFormatDistanceImperialMiles() {
-        // Large distance: should show miles
-        let pixels = 4330.0 * 5000 // 5000 meters ~ 3.1 miles
+        let pixels = ppm * 5000
         let result = DistanceConverter.formatDistance(pixels, unit: .imperial)
         XCTAssertTrue(result.hasSuffix(" mi"))
     }
@@ -120,9 +118,7 @@ final class DistanceConverterTests: XCTestCase {
     }
 
     func testPercentAroundEarthKnownValue() {
-        // Earth circumference = 40,075,000 meters
-        // pixelsPerMeter = 4330
-        let earthPixels = 40_075_000.0 * 4330.0
+        let earthPixels = Constants.earthCircumferenceMeters * ppm
         XCTAssertEqual(DistanceConverter.percentAroundEarth(earthPixels), 100.0, accuracy: 0.001)
     }
 
@@ -133,15 +129,14 @@ final class DistanceConverterTests: XCTestCase {
     }
 
     func testPercentToMoonKnownValue() {
-        // Moon distance = 384,400,000 meters
-        let moonPixels = 384_400_000.0 * 4330.0
+        let moonPixels = Constants.moonDistanceMeters * ppm
         XCTAssertEqual(DistanceConverter.percentToMoon(moonPixels), 100.0, accuracy: 0.001)
     }
 
     // MARK: - formatEarthComparison
 
     func testFormatEarthComparisonContainsPercentSign() {
-        let result = DistanceConverter.formatEarthComparison(4330.0 * 100)
+        let result = DistanceConverter.formatEarthComparison(ppm * 100)
         XCTAssertTrue(result.contains("%"))
         XCTAssertTrue(result.contains("around the world"))
     }
@@ -149,7 +144,7 @@ final class DistanceConverterTests: XCTestCase {
     // MARK: - formatMoonComparison
 
     func testFormatMoonComparisonContainsPercentSign() {
-        let result = DistanceConverter.formatMoonComparison(4330.0 * 100)
+        let result = DistanceConverter.formatMoonComparison(ppm * 100)
         XCTAssertTrue(result.contains("%"))
         XCTAssertTrue(result.contains("to the moon"))
     }
