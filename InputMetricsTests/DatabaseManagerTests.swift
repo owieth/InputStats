@@ -577,29 +577,12 @@ final class DatabaseManagerTests: XCTestCase {
         XCTAssertTrue(summaries.isEmpty)
     }
 
-    func testEmptyDatabaseAllTimeTotalsReturnsZeros() async throws {
-        let row = try await dbQueue.read { db in
-            try Row.fetchOne(db, sql: """
-                SELECT
-                    COALESCE(SUM(mouse_distance_px), 0) AS distance,
-                    COALESCE(SUM(mouse_clicks_left), 0) AS clicks_left,
-                    COALESCE(SUM(mouse_clicks_right), 0) AS clicks_right,
-                    COALESCE(SUM(mouse_clicks_middle), 0) AS clicks_middle,
-                    COALESCE(SUM(keystrokes), 0) AS keystrokes,
-                    COALESCE(SUM(scroll_distance_vertical), 0) AS scroll_vertical,
-                    COALESCE(SUM(scroll_distance_horizontal), 0) AS scroll_horizontal
-                FROM daily_summary
-                """)
+    func testEmptyDatabaseAllTimeTotalsReturnsNil() async throws {
+        let summary = try await dbQueue.read { db in
+            try DailySummary.fetchOne(db)
         }
 
-        XCTAssertNotNil(row)
-        XCTAssertEqual(row?["distance"] as? Double, 0)
-        XCTAssertEqual(row?["clicks_left"] as? Int, 0)
-        XCTAssertEqual(row?["clicks_right"] as? Int, 0)
-        XCTAssertEqual(row?["clicks_middle"] as? Int, 0)
-        XCTAssertEqual(row?["keystrokes"] as? Int, 0)
-        XCTAssertEqual(row?["scroll_vertical"] as? Double, 0)
-        XCTAssertEqual(row?["scroll_horizontal"] as? Double, 0)
+        XCTAssertNil(summary)
     }
 
     func testEmptyDatabaseMouseHeatmapReturnsEmpty() async throws {
