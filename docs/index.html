@@ -355,7 +355,7 @@
         <tr><td>Charts</td><td>Swift Charts (LineMark, AreaMark, PointMark)</td></tr>
         <tr><td>Event Capture</td><td>CGEventTap (listen-only)</td></tr>
         <tr><td>Database</td><td>SQLite via GRDB.swift</td></tr>
-        <tr><td>Login Item</td><td>LaunchAtLogin by Sindre Sorhus</td></tr>
+        <tr><td>Login Item</td><td>SMAppService (ServiceManagement)</td></tr>
         <tr><td>Architecture</td><td>MVVM with @Observable ViewModels</td></tr>
         <tr><td>Minimum macOS</td><td>15.0 (Sequoia)</td></tr>
       </table>
@@ -419,7 +419,7 @@
       </ul>
 
       <h3>Third-Party Services</h3>
-      <p>InputMetrics uses no third-party services, SDKs, or libraries that collect data. The only external dependencies are <a href="https://github.com/groue/GRDB.swift">GRDB.swift</a> (local database) and <a href="https://github.com/sindresorhus/LaunchAtLogin">LaunchAtLogin</a> (login item management), neither of which perform any network activity.</p>
+      <p>InputMetrics uses no third-party services, SDKs, or libraries that collect data. The only external dependency is <a href="https://github.com/groue/GRDB.swift">GRDB.swift</a> (local database), which does not perform any network activity. Login item management uses the native macOS ServiceManagement framework.</p>
 
       <h3>Children</h3>
       <p>InputMetrics does not collect personal information from anyone, including children under the age of 13.</p>
