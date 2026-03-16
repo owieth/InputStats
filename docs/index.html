@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InputMetrics — macOS Input Tracker</title>
   <link rel="icon" type="image/png" href="app-icon.png">
+  <meta name="description" content="InputMetrics is a free, open-source macOS menu bar app that tracks keyboard and mouse usage with heatmaps, charts, and detailed statistics. All data stays on your Mac.">
+  <link rel="canonical" href="https://owieth.github.io/InputStats/">
+  <meta name="theme-color" content="#0071e3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#4da3ff" media="(prefers-color-scheme: dark)">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="InputMetrics — macOS Input Tracker">
+  <meta property="og:description" content="Free, open-source macOS menu bar app that tracks keyboard and mouse usage with heatmaps, charts, and statistics. 100% local, zero network requests.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://owieth.github.io/InputStats/">
+  <meta property="og:image" content="https://owieth.github.io/InputStats/app-icon.png">
+  <meta property="og:image:width" content="256">
+  <meta property="og:image:height" content="256">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="InputMetrics">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="InputMetrics — macOS Input Tracker">
+  <meta name="twitter:description" content="Free, open-source macOS menu bar app that tracks keyboard and mouse usage with heatmaps, charts, and statistics. 100% local.">
+  <meta name="twitter:image" content="https://owieth.github.io/InputStats/app-icon.png">
+
   <style>
     :root {
       --bg: #fafafa;
@@ -196,10 +218,25 @@
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "InputMetrics",
+    "description": "A lightweight macOS menu bar app that tracks keyboard and mouse usage with heatmaps, charts, and detailed statistics.",
+    "url": "https://owieth.github.io/InputStats/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "macOS 15+",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "downloadUrl": "https://github.com/owieth/InputStats/releases/latest",
+    "author": { "@type": "Person", "name": "Olivier Winkler", "url": "https://github.com/owieth" },
+    "image": "https://owieth.github.io/InputStats/app-icon.png"
+  }
+  </script>
 </head>
 <body>
 
-  <div class="container">
+  <main class="container">
 
     <!-- Hero -->
     <div class="hero">
@@ -394,7 +431,7 @@
       <p>Questions about this policy? Open an issue on <a href="https://github.com/owieth/InputStats/issues">GitHub</a>.</p>
     </section>
 
-  </div>
+  </main>
 
   <footer>
     <div class="container">

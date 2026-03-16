@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://owieth.github.io/InputStats/sitemap.xml
