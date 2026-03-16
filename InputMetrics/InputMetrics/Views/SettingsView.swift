@@ -64,8 +64,8 @@ struct SettingsView: View {
 
                     // General Section
                     SettingsSectionView(title: "General", icon: "slider.horizontal.3") {
-                        VStack(spacing: 0) {
-                            SettingsRowView {
+                        SettingsGroupView {
+                            SettingsGroupItemView {
                                 HStack {
                                     Label("Launch at login", systemImage: "power")
                                         .font(.body)
@@ -79,7 +79,10 @@ struct SettingsView: View {
                                 }
                             }
 
-                            SettingsRowView {
+                            Divider()
+                                .padding(.horizontal)
+
+                            SettingsGroupItemView {
                                 HStack {
                                     Label("Show live stats in menu bar", systemImage: "chart.bar")
                                         .font(.body)
@@ -138,8 +141,8 @@ struct SettingsView: View {
 
                     // Goals Section
                     SettingsSectionView(title: "Goals", icon: "target") {
-                        VStack(spacing: 0) {
-                            SettingsRowView {
+                        SettingsGroupView {
+                            SettingsGroupItemView {
                                 HStack {
                                     Label("Enable daily goals", systemImage: "flag")
                                         .font(.body)
@@ -150,7 +153,10 @@ struct SettingsView: View {
                             }
 
                             if preferences.goalConfig.enabled {
-                                SettingsRowView {
+                                Divider()
+                                    .padding(.horizontal)
+
+                                SettingsGroupItemView {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Label("Daily keystroke goal", systemImage: "keyboard")
                                             .font(.body)
@@ -166,7 +172,10 @@ struct SettingsView: View {
                                     }
                                 }
 
-                                SettingsRowView {
+                                Divider()
+                                    .padding(.horizontal)
+
+                                SettingsGroupItemView {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Label("Daily distance goal (km)", systemImage: "arrow.up.right")
                                             .font(.body)
@@ -209,8 +218,8 @@ struct SettingsView: View {
 
                     // Storage Section
                     SettingsSectionView(title: "Storage", icon: "internaldrive") {
-                        VStack(spacing: 0) {
-                            SettingsRowView {
+                        SettingsGroupView {
+                            SettingsGroupItemView {
                                 VStack(alignment: .leading, spacing: 12) {
                                     Label("Data retention", systemImage: "clock.arrow.circlepath")
                                         .font(.body)
@@ -235,7 +244,10 @@ struct SettingsView: View {
                                 }
                             }
 
-                            SettingsRowView {
+                            Divider()
+                                .padding(.horizontal)
+
+                            SettingsGroupItemView {
                                 HStack {
                                     Label("Database size", systemImage: "externaldrive")
                                         .font(.body)
@@ -249,7 +261,10 @@ struct SettingsView: View {
                                 }
                             }
 
-                            SettingsRowView {
+                            Divider()
+                                .padding(.horizontal)
+
+                            SettingsGroupItemView {
                                 HStack {
                                     Label("Total records", systemImage: "number")
                                         .font(.body)
@@ -712,6 +727,29 @@ struct SettingsRowView<Content: View>: View {
             .background(Color.secondary.opacity(0.1))
             .cornerRadius(12)
             .padding(.horizontal)
+    }
+}
+
+struct SettingsGroupView<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            content()
+        }
+        .background(Color.secondary.opacity(0.1))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+}
+
+struct SettingsGroupItemView<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
