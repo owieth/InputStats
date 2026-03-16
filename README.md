@@ -35,7 +35,7 @@ A lightweight macOS menu bar app that tracks mouse movements, clicks, and keyboa
 | Charts | Swift Charts |
 | Event Capture | CGEventTap (listen-only) |
 | Database | SQLite via [GRDB.swift](https://github.com/groue/GRDB.swift) |
-| Login Item | [LaunchAtLogin](https://github.com/sindresorhus/LaunchAtLogin) |
+| Login Item | SMAppService (ServiceManagement) |
 | Architecture | MVVM with @Observable ViewModels |
 | Minimum macOS | 15.0 (Sequoia) |
 
