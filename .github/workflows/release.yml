@@ -58,6 +58,50 @@ jobs:
             -exportPath build/export \
             -exportOptionsPlist ExportOptions.plist
 
+      - name: Re-sign nested LaunchAtLogin helpers
+        run: |
+          APP="build/export/InputMetrics.app"
+          BUNDLE="$APP/Contents/Resources/LaunchAtLogin_LaunchAtLogin.bundle/Contents/Resources"
+          IDENTITY="Developer ID Application"
+
+          for ZIP_FILE in "$BUNDLE/LaunchAtLoginHelper.zip" "$BUNDLE/LaunchAtLoginHelper-with-runtime.zip"; do
+            if [ -f "$ZIP_FILE" ]; then
+              TMPDIR=$(mktemp -d)
+              unzip -o "$ZIP_FILE" -d "$TMPDIR"
+
+              # Re-sign all dylibs first (innermost dependencies)
+              find "$TMPDIR" -name "*.dylib" | while read -r dylib; do
+                codesign --force --sign "$IDENTITY" --timestamp --options runtime "$dylib"
+              done
+
+              # Re-sign executables
+              find "$TMPDIR" -type f -perm +111 ! -name "*.dylib" | while read -r binary; do
+                file "$binary" | grep -q "Mach-O" && \
+                  codesign --force --sign "$IDENTITY" --timestamp --options runtime \
+                    --entitlements /dev/null "$binary"
+              done
+
+              # Re-sign .app bundles
+              find "$TMPDIR" -name "*.app" -type d | while read -r app; do
+                codesign --force --deep --sign "$IDENTITY" --timestamp --options runtime \
+                  --entitlements /dev/null "$app"
+              done
+
+              # Repackage zip
+              rm "$ZIP_FILE"
+              (cd "$TMPDIR" && zip -r "$ZIP_FILE" .)
+              rm -rf "$TMPDIR"
+            fi
+          done
+
+          # Re-sign the bundle
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
+            "$APP/Contents/Resources/LaunchAtLogin_LaunchAtLogin.bundle"
+
+          # Re-sign the main app
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
+            --entitlements InputMetrics/InputMetrics/InputMetrics.entitlements "$APP"
+
       - name: Notarize app
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
