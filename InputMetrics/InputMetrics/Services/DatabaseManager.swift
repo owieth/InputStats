@@ -708,14 +708,20 @@ final class DatabaseManager: @unchecked Sendable {
 
         dbQueue_serial.async {
             do {
+                // String comparison with "yyyy-MM-dd" format works correctly
+                // because the format is lexicographically sortable.
                 try db.write { db in
-                    try db.execute(sql: "DELETE FROM daily_summary WHERE date < ?", arguments: [cutoffString])
-                    try db.execute(sql: "DELETE FROM mouse_heatmap WHERE date < ?", arguments: [cutoffString])
-                    try db.execute(sql: "DELETE FROM keyboard_heatmap WHERE date < ?", arguments: [cutoffString])
-                    try db.execute(sql: "DELETE FROM hourly_summary WHERE date < ?", arguments: [cutoffString])
-                    try db.execute(sql: "DELETE FROM app_usage WHERE date < ?", arguments: [cutoffString])
-                    try db.execute(sql: "VACUUM")
+                    try db.inTransaction {
+                        try db.execute(sql: "DELETE FROM daily_summary WHERE date < ?", arguments: [cutoffString])
+                        try db.execute(sql: "DELETE FROM mouse_heatmap WHERE date < ?", arguments: [cutoffString])
+                        try db.execute(sql: "DELETE FROM keyboard_heatmap WHERE date < ?", arguments: [cutoffString])
+                        try db.execute(sql: "DELETE FROM hourly_summary WHERE date < ?", arguments: [cutoffString])
+                        try db.execute(sql: "DELETE FROM app_usage WHERE date < ?", arguments: [cutoffString])
+                        return .commit
+                    }
                 }
+                // VACUUM cannot run inside a transaction
+                try db.vacuum()
                 AppLogger.database.info("Pruned data older than \(cutoffString)")
             } catch {
                 AppLogger.database.error("Prune old data failed: \(error.localizedDescription)")
