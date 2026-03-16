@@ -4,7 +4,7 @@ A lightweight macOS menu bar app that tracks mouse movements, clicks, and keyboa
 
 ## Download
 
-[**Download the latest release**](https://github.com/owieth/InputStats/releases/latest) — signed and notarized for macOS.
+[**Download the latest release**](https://github.com/owieth/InputMetrics/releases/latest) — signed and notarized for macOS.
 
 ### Installation
 
