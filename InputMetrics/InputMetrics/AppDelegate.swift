@@ -10,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var milestoneTimer: Timer?
     private var backgroundActivity: NSObjectProtocol?
     private var keyboardPermissionTimer: Timer?
+    private var isQuittingFromMenu = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Prevent App Nap from suspending background event monitoring
@@ -138,7 +139,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func quitApp() {
+        isQuittingFromMenu = true
         NSApp.terminate(nil)
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if isQuittingFromMenu {
+            return .terminateNow
+        }
+
+        let alert = NSAlert()
+        alert.messageText = "Quit InputMetrics?"
+        alert.informativeText = "InputMetrics runs in the menu bar to track your input. To quit, use the menu bar icon's right-click menu."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Keep Running")
+        alert.addButton(withTitle: "Quit")
+
+        let response = alert.runModal()
+        if response == .alertSecondButtonReturn {
+            return .terminateNow
+        }
+        return .terminateCancel
     }
 
     func applicationWillTerminate(_ notification: Notification) {
