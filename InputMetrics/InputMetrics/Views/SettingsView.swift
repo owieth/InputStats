@@ -1,6 +1,5 @@
+import ServiceManagement
 import SwiftUI
-import UniformTypeIdentifiers
-import LaunchAtLogin
 import UniformTypeIdentifiers
 
 enum ExportFormat: String, CaseIterable {
@@ -40,6 +39,7 @@ struct SettingsView: View {
     @State private var exportResult: ExportResult?
     @State private var showExportToast = false
     @State private var exportFormat: ExportFormat = .csv
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var databaseSize: String = "Calculating..."
     @State private var totalRecords: Int = 0
 
@@ -72,10 +72,19 @@ struct SettingsView: View {
 
                                     Spacer()
 
-                                    LaunchAtLogin.Toggle {
-                                        EmptyView()
-                                    }
-                                    .labelsHidden()
+                                    Toggle("", isOn: $launchAtLogin)
+                                        .labelsHidden()
+                                        .onChange(of: launchAtLogin) { _, enabled in
+                                            do {
+                                                if enabled {
+                                                    try SMAppService.mainApp.register()
+                                                } else {
+                                                    try SMAppService.mainApp.unregister()
+                                                }
+                                            } catch {
+                                                launchAtLogin = SMAppService.mainApp.status == .enabled
+                                            }
+                                        }
                                 }
                             }
 
