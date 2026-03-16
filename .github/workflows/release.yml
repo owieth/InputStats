@@ -56,7 +56,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath build/InputMetrics.xcarchive \
             -exportPath build/export \
-            -exportOptionsPlist build/ExportOptions.plist
+            -exportOptionsPlist ExportOptions.plist
 
       - name: Notarize app
         env:
