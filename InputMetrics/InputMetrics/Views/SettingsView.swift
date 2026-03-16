@@ -34,6 +34,7 @@ enum ExportResult {
 
 struct SettingsView: View {
     @ObservedObject private var preferences = UserPreferences.shared
+    @Environment(\.appearsActive) private var appearsActive
     @State private var showResetConfirmation = false
     @State private var showRestoreConfirmation = false
     @State private var exportResult: ExportResult?
@@ -512,6 +513,10 @@ struct SettingsView: View {
         }
         .onAppear {
             refreshDatabaseInfo()
+        }
+        .onChange(of: appearsActive) { _, isActive in
+            guard isActive else { return }
+            launchAtLogin = SMAppService.mainApp.status == .enabled
         }
         .onChange(of: exportResult?.message) { oldValue, newValue in
             if newValue != nil {
