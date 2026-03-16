@@ -17,6 +17,7 @@ class KeyboardTracker {
         let modifierFlags: Int
     }
 
+    // Naturally bounded by unique key+modifier combinations (~100 keys)
     private var heatmapBuffer: [HeatmapKey: Int] = [:]
 
     private init() {

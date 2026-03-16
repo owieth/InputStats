@@ -29,7 +29,10 @@ class MouseTracker {
     private var scrollVertical: Double = 0
     private var scrollHorizontal: Double = 0
 
+    // Naturally bounded by grid size (50x50 per screen per date)
     private var heatmapBuffer: [HeatmapBucketKey: Int] = [:]
+
+    private let maxSpeedSamples = 500
 
     private var persistTimer: Timer?
     private let persistInterval: TimeInterval = 30.0
@@ -121,6 +124,9 @@ class MouseTracker {
             let elapsed = now.timeIntervalSince(lastTime)
             if elapsed > 0 && elapsed < 1.0 {
                 let speed = distance / elapsed
+                if speedSamples.count >= maxSpeedSamples {
+                    speedSamples.removeFirst()
+                }
                 speedSamples.append(speed)
                 peakMouseSpeed = max(peakMouseSpeed, speed)
             }
