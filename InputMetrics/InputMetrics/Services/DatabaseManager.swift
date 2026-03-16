@@ -646,8 +646,29 @@ final class DatabaseManager: @unchecked Sendable {
         guard let db = dbQueue else {
             throw NSError(domain: "InputMetrics", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database not ready"])
         }
+
+        AppLogger.database.info("Starting backup to \(url.path)")
         try db.backup(to: DatabaseQueue(path: url.path))
+
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: url.path) else {
+            AppLogger.database.error("Backup file does not exist after creation: \(url.path)")
+            throw NSError(domain: "InputMetrics", code: 3, userInfo: [NSLocalizedDescriptionKey: "Backup file was not created"])
+        }
+
+        let attributes = try fileManager.attributesOfItem(atPath: url.path)
+        let fileSize = attributes[.size] as? Int64 ?? 0
+        guard fileSize > 0 else {
+            AppLogger.database.error("Backup file is empty: \(url.path)")
+            throw NSError(domain: "InputMetrics", code: 4, userInfo: [NSLocalizedDescriptionKey: "Backup file is empty"])
+        }
+
+        AppLogger.database.info("Backup completed (\(fileSize) bytes)")
     }
+
+    private static let requiredTables: Set<String> = [
+        "daily_summary", "mouse_heatmap", "keyboard_heatmap", "hourly_summary", "app_usage"
+    ]
 
     func restoreDatabase(from url: URL) throws {
         guard dbQueue != nil else {
@@ -656,20 +677,41 @@ final class DatabaseManager: @unchecked Sendable {
 
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: url.path) else {
+            AppLogger.database.error("Backup file not found: \(url.path)")
             throw NSError(domain: "InputMetrics", code: 2, userInfo: [NSLocalizedDescriptionKey: "Backup file not found"])
         }
 
-        // Verify the backup is a valid SQLite database with expected tables
+        AppLogger.database.info("Validating backup at \(url.path)")
+
         let backupDb = try DatabaseQueue(path: url.path)
-        _ = try backupDb.read { db in
-            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM daily_summary")
+
+        // Validate all required tables exist in the backup
+        let existingTables = try backupDb.read { db in
+            try String.fetchAll(db, sql: "SELECT name FROM sqlite_master WHERE type = 'table'")
         }
+        let existingTableSet = Set(existingTables)
+        let missingTables = Self.requiredTables.subtracting(existingTableSet)
+
+        guard missingTables.isEmpty else {
+            let sorted = missingTables.sorted().joined(separator: ", ")
+            AppLogger.database.error("Backup is missing required tables: \(sorted)")
+            throw NSError(domain: "InputMetrics", code: 5, userInfo: [NSLocalizedDescriptionKey: "Backup is missing required tables: \(sorted)"])
+        }
+
+        AppLogger.database.info("Backup validation passed, restoring database")
 
         // Restore by copying backup contents into the current database
         try backupDb.backup(to: dbQueue!)
 
         // Re-run migrations in case the backup is from an older schema
-        try migrator.migrate(dbQueue!)
+        do {
+            try migrator.migrate(dbQueue!)
+        } catch {
+            AppLogger.database.error("Migration after restore failed: \(error.localizedDescription)")
+            throw NSError(domain: "InputMetrics", code: 6, userInfo: [NSLocalizedDescriptionKey: "Migration after restore failed: \(error.localizedDescription)"])
+        }
+
+        AppLogger.database.info("Database restore completed")
     }
 
     // MARK: - Utility
