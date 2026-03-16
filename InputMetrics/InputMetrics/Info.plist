@@ -30,6 +30,17 @@
 	<string>InputMetrics needs Accessibility access to monitor input events for usage statistics.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.inputmetrics.InputMetrics</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>inputmetrics</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>NSPrincipalClass</key>

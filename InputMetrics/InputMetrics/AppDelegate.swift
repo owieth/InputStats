@@ -185,6 +185,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - URL Handling
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            if url.scheme == "inputmetrics" {
+                togglePopover()
+                return
+            }
+        }
+    }
+
     // MARK: - Keyboard Permission Check
 
     private func scheduleKeyboardPermissionCheck() {
