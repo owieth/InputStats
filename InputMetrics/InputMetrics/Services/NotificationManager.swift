@@ -1,4 +1,5 @@
 import Foundation
+import os
 import UserNotifications
 
 @MainActor
@@ -10,7 +11,7 @@ class NotificationManager {
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error {
-                print("Notification permission error: \(error)")
+                AppLogger.general.error("Notification permission error: \(error)")
             }
         }
     }
