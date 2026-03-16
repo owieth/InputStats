@@ -72,6 +72,46 @@
       font-size: 13px;
       font-weight: 600;
     }
+    .download-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 24px;
+      transition: opacity 0.15s;
+    }
+    .download-btn:hover { opacity: 0.85; }
+    .install-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+      text-align: center;
+    }
+    @media (max-width: 560px) { .install-steps { grid-template-columns: 1fr 1fr; } }
+    .install-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 12px;
+    }
+    .install-step .step-num {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .install-step p { font-size: 14px; margin: 0; }
 
     /* Sections */
     section { padding: 48px 0; }
@@ -167,7 +207,32 @@
       <h1>InputMetrics</h1>
       <p>A lightweight macOS menu bar app that tracks your keyboard and mouse usage with beautiful charts, heatmaps, and detailed statistics. Entirely private, entirely local.</p>
       <span class="badge">macOS 15+ &middot; Free &middot; Open Source</span>
+      <br>
+      <a class="download-btn" href="https://github.com/owieth/InputStats/releases/latest">Download Latest Release</a>
     </div>
+
+    <!-- Installation -->
+    <section>
+      <h2>Installation</h2>
+      <div class="install-steps">
+        <div class="install-step">
+          <span class="step-num">1</span>
+          <p>Download the ZIP from the latest release</p>
+        </div>
+        <div class="install-step">
+          <span class="step-num">2</span>
+          <p>Extract and drag to Applications</p>
+        </div>
+        <div class="install-step">
+          <span class="step-num">3</span>
+          <p>Launch from menu bar</p>
+        </div>
+        <div class="install-step">
+          <span class="step-num">4</span>
+          <p>Grant Accessibility &amp; Input Monitoring</p>
+        </div>
+      </div>
+    </section>
 
     <!-- Features -->
     <section>
@@ -248,7 +313,7 @@
       <h2>Tech Stack</h2>
       <table>
         <tr><th>Layer</th><th>Technology</th></tr>
-        <tr><td>Language</td><td>Swift 5</td></tr>
+        <tr><td>Language</td><td>Swift 6</td></tr>
         <tr><td>UI</td><td>SwiftUI with AppKit bridging</td></tr>
         <tr><td>Charts</td><td>Swift Charts (LineMark, AreaMark, PointMark)</td></tr>
         <tr><td>Event Capture</td><td>CGEventTap (listen-only)</td></tr>
