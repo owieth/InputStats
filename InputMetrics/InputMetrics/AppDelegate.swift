@@ -8,8 +8,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: NSPopover?
     private var liveStatsTimer: Timer?
     private var milestoneTimer: Timer?
+    private var backgroundActivity: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Prevent App Nap from suspending background event monitoring
+        backgroundActivity = ProcessInfo.processInfo.beginActivity(
+            options: [.userInitiated, .idleSystemSleepDisabled],
+            reason: "Continuous input event monitoring"
+        )
+
         // Initialize database
         _ = DatabaseManager.shared
 
