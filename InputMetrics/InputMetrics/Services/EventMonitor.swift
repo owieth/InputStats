@@ -22,6 +22,13 @@ class EventMonitor {
     private var appBuffer: [String: (name: String, keystrokes: Int, clicks: Int)] = [:]
     private var appPersistTimer: Timer?
 
+    private var mouseEventCount: Int = 0
+    private var keyboardEventCount: Int = 0
+
+    var isKeyboardPermissionLikelyMissing: Bool {
+        mouseEventCount > 50 && keyboardEventCount == 0
+    }
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -195,21 +202,27 @@ class EventMonitor {
 
             switch type {
             case .mouseMoved:
+                mouseEventCount += 1
                 MouseTracker.shared.trackMovement(to: location)
 
             case .leftMouseDown:
+                mouseEventCount += 1
                 MouseTracker.shared.trackClick(type: .left, at: location)
 
             case .rightMouseDown:
+                mouseEventCount += 1
                 MouseTracker.shared.trackClick(type: .right, at: location)
 
             case .otherMouseDown:
+                mouseEventCount += 1
                 MouseTracker.shared.trackClick(type: .middle, at: location)
 
             case .keyDown:
+                keyboardEventCount += 1
                 KeyboardTracker.shared.trackKeystroke(keyCode: keyCode, modifierFlags: flags)
 
             case .scrollWheel:
+                mouseEventCount += 1
                 MouseTracker.shared.trackScroll(deltaX: scrollDeltaX, deltaY: scrollDeltaY)
 
             default:
