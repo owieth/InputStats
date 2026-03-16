@@ -200,7 +200,7 @@ final class DatabaseManager: @unchecked Sendable {
                                 scroll_distance_vertical = scroll_distance_vertical + excluded.scroll_distance_vertical,
                                 scroll_distance_horizontal = scroll_distance_horizontal + excluded.scroll_distance_horizontal,
                                 first_active_at = COALESCE(daily_summary.first_active_at, excluded.first_active_at),
-                                last_active_at = COALESCE(excluded.last_active_at, daily_summary.last_active_at),
+                                last_active_at = COALESCE(daily_summary.last_active_at, excluded.last_active_at),
                                 active_minutes = active_minutes + excluded.active_minutes,
                                 avg_mouse_speed = CASE WHEN excluded.avg_mouse_speed > 0 THEN excluded.avg_mouse_speed ELSE daily_summary.avg_mouse_speed END,
                                 peak_mouse_speed = MAX(daily_summary.peak_mouse_speed, excluded.peak_mouse_speed),
