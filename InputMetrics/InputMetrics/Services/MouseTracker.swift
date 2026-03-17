@@ -242,6 +242,10 @@ class MouseTracker {
         return (accumulatedDistance, leftClicks, rightClicks, middleClicks, scrollVertical, scrollHorizontal)
     }
 
+    func getHeatmapSnapshot() -> [HeatmapBucketKey: Int] {
+        heatmapBuffer
+    }
+
     private func bucketForPoint(_ point: CGPoint) -> (x: Int, y: Int) {
         guard let cache = screenCache else { return (0, 0) }
 

@@ -167,6 +167,10 @@ class EventMonitor {
         (firstActiveAt, lastActiveAt)
     }
 
+    func getAppUsageSnapshot() -> [String: (name: String, keystrokes: Int, clicks: Int)] {
+        appBuffer
+    }
+
     func getAndResetActiveSeconds() -> TimeInterval {
         let seconds = activeSeconds
         activeSeconds = 0
