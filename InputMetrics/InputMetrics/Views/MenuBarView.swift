@@ -8,6 +8,7 @@ struct MenuBarView: View {
     @State private var hoveredMouseLabel: String?
     @State private var hoveredKeyboardLabel: String?
     @State private var showKeyboardWarning = false
+    @State private var dataRefreshTick = 0
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -193,6 +194,14 @@ struct MenuBarView: View {
             viewModel.refreshAllTimeTotalsIfNeeded()
             viewModel.updateAllTimeStats()
             updateKeyboardWarning()
+            viewModel.loadChartData()
+            dataRefreshTick += 1
+            if dataRefreshTick % 10 == 0 {
+                viewModel.loadHeatmapData()
+                viewModel.loadKeyboardData()
+                viewModel.loadHourlySummaries()
+                viewModel.loadAppUsage()
+            }
         }
         .onAppear {
             viewModel.loadAll()
@@ -374,7 +383,7 @@ struct MenuBarView: View {
             // Mouse Heatmap
             VStack(alignment: .leading, spacing: 8) {
                 DisclosureGroup("Mouse Heatmap") {
-                    if !viewModel.heatmapData.isEmpty {
+                    if viewModel.hasHeatmapData {
                         HeatmapCanvas(data: viewModel.heatmapData)
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel("Mouse click heatmap showing click distribution")

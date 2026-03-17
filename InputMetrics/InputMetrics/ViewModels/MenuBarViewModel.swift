@@ -46,6 +46,10 @@ final class MenuBarViewModel {
         Array(keyboardEntries.sorted { $0.count > $1.count }.prefix(5))
     }
 
+    var hasHeatmapData: Bool {
+        heatmapData.flatMap { $0 }.contains { $0 > 0 }
+    }
+
     func loadAll() {
         updateStats()
         loadChartData()
@@ -203,6 +207,11 @@ final class MenuBarViewModel {
             grid[entry.bucketY][entry.bucketX] += entry.clickCount
         }
 
+        for (key, count) in MouseTracker.shared.getHeatmapSnapshot() {
+            guard key.bucketX >= 0 && key.bucketY >= 0 && key.bucketX < 50 && key.bucketY < 50 else { continue }
+            grid[key.bucketY][key.bucketX] += count
+        }
+
         heatmapData = grid
     }
 
@@ -218,7 +227,25 @@ final class MenuBarViewModel {
 
     func loadAppUsage() {
         let today = todayString()
-        appUsageEntries = DatabaseManager.shared.getAppUsage(date: today)
+        var entries = DatabaseManager.shared.getAppUsage(date: today)
+
+        for (bundleId, live) in EventMonitor.shared.getAppUsageSnapshot() {
+            if let idx = entries.firstIndex(where: { $0.bundleId == bundleId }) {
+                entries[idx].keystrokes += live.keystrokes
+                entries[idx].mouseClicks += live.clicks
+            } else {
+                entries.append(AppUsageEntry(
+                    date: today,
+                    bundleId: bundleId,
+                    appName: live.name,
+                    keystrokes: live.keystrokes,
+                    mouseClicks: live.clicks,
+                    activeSeconds: 0
+                ))
+            }
+        }
+
+        appUsageEntries = entries.sorted { $0.keystrokes > $1.keystrokes }
     }
 
     func chartDistance(_ pixels: Double, unit: DistanceUnit) -> Double {
