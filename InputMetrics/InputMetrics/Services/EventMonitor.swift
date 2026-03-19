@@ -22,6 +22,9 @@ class EventMonitor {
     private var appBuffer: [String: (name: String, keystrokes: Int, clicks: Int)] = [:]
     private var appPersistTimer: Timer?
 
+    private var sleepObserver: NSObjectProtocol?
+    private var wakeObserver: NSObjectProtocol?
+
     private var mouseEventCount: Int = 0
     private var keyboardEventCount: Int = 0
 
@@ -47,6 +50,7 @@ class EventMonitor {
 
     func start() {
         startAppTracking()
+        startSleepWakeObservers()
         if createAndStartEventTap() { return }
 
         AppLogger.events.warning("Event tap creation failed -- accessibility permission likely not granted")
@@ -75,6 +79,10 @@ class EventMonitor {
         persistAppUsage()
         retryTimer?.invalidate()
         retryTimer = nil
+        if let sleepObserver { NSWorkspace.shared.notificationCenter.removeObserver(sleepObserver) }
+        if let wakeObserver { NSWorkspace.shared.notificationCenter.removeObserver(wakeObserver) }
+        sleepObserver = nil
+        wakeObserver = nil
         guard let eventTap = eventTap else { return }
         CGEvent.tapEnable(tap: eventTap, enable: false)
         CFMachPortInvalidate(eventTap)
@@ -161,6 +169,35 @@ class EventMonitor {
         }
         RunLoop.current.add(timer, forMode: .common)
         retryTimer = timer
+    }
+
+    private func startSleepWakeObservers() {
+        sleepObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.handleSleep() }
+        }
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.handleWake() }
+        }
+    }
+
+    private func handleSleep() {
+        MouseTracker.shared.persistData()
+        KeyboardTracker.shared.persistData()
+        persistAppUsage()
+    }
+
+    private func handleWake() {
+        lastEventTime = Date()
+        let today = Self.dateFormatter.string(from: Date())
+        if currentDate != today {
+            firstActiveAt = nil
+            lastActiveAt = nil
+            currentDate = today
+        }
     }
 
     func getActivityTimes() -> (first: String?, last: String?) {
