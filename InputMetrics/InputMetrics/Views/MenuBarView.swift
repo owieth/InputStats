@@ -22,6 +22,7 @@ struct MenuBarView: View {
                     Image(systemName: "gearshape")
                 }
                 .buttonStyle(.plain)
+                .focusEffectDisabled()
                 .accessibilityLabel("Settings")
 
                 Spacer()
@@ -41,6 +42,7 @@ struct MenuBarView: View {
                     Image(systemName: "macwindow")
                 }
                 .buttonStyle(.plain)
+                .focusEffectDisabled()
                 .accessibilityLabel("Dashboard")
             }
             .padding()
