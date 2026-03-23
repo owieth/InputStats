@@ -47,10 +47,11 @@ jobs:
         env:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode)")
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode \
-            > ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".provisionprofile
+          cp /tmp/build.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".provisionprofile
+          rm /tmp/build.provisionprofile
 
       - name: Resolve package dependencies
         run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
@@ -59,7 +60,9 @@ jobs:
         env:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode)")
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
+          rm /tmp/build.provisionprofile
           xcodebuild archive \
             -project InputMetrics.xcodeproj \
             -scheme InputMetrics \
@@ -75,7 +78,9 @@ jobs:
         env:
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode)")
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
+          rm /tmp/build.provisionprofile
           /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" ExportOptions.plist
           /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:com.inputmetrics.InputMetrics string $PROFILE_NAME" ExportOptions.plist
 
