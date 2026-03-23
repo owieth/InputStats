@@ -57,12 +57,7 @@ jobs:
         run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
 
       - name: Build archive
-        env:
-          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
         run: |
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
-          rm /tmp/build.provisionprofile
           xcodebuild archive \
             -project InputMetrics.xcodeproj \
             -scheme InputMetrics \
@@ -71,8 +66,7 @@ jobs:
             -archivePath build/InputMetrics.xcarchive \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Developer ID Application" \
-            DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }} \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME"
+            DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }}
 
       - name: Inject provisioning profile into export options
         env:
