@@ -53,6 +53,16 @@ jobs:
           cp /tmp/build.provisionprofile ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".provisionprofile
           rm /tmp/build.provisionprofile
 
+      - name: Configure app target signing
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
+          rm /tmp/build.provisionprofile
+          REPLACEMENT="CODE_SIGN_STYLE = Manual;$(printf '\n\t\t\t\t')PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";"
+          sed -i '' "/TARGET_RELEASE_CONFIG/,/name = Release/ s/CODE_SIGN_STYLE = Automatic;/$REPLACEMENT/" InputMetrics.xcodeproj/project.pbxproj
+
       - name: Resolve package dependencies
         run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
 
@@ -64,7 +74,6 @@ jobs:
             -configuration Release \
             -destination 'platform=macOS' \
             -archivePath build/InputMetrics.xcarchive \
-            CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }}
 
