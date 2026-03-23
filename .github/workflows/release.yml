@@ -60,8 +60,7 @@ jobs:
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
           PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
           rm /tmp/build.provisionprofile
-          REPLACEMENT="CODE_SIGN_STYLE = Manual;$(printf '\n\t\t\t\t')PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";"
-          sed -i '' "/TARGET_RELEASE_CONFIG/,/name = Release/ s/CODE_SIGN_STYLE = Automatic;/$REPLACEMENT/" InputMetrics.xcodeproj/project.pbxproj
+          perl -i -0pe "s/(TARGET_RELEASE_CONFIG.*?)(CODE_SIGN_STYLE = )Automatic;/\${1}\${2}Manual;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/s" InputMetrics.xcodeproj/project.pbxproj
 
       - name: Resolve package dependencies
         run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
