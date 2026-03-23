@@ -60,7 +60,7 @@ jobs:
           echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
           PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
           rm /tmp/build.provisionprofile
-          perl -i -0pe "s/(TARGET_RELEASE_CONFIG.*?)(CODE_SIGN_STYLE = )Automatic;/\${1}\${2}Manual;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";/s" InputMetrics.xcodeproj/project.pbxproj
+          perl -i -0pe 's/(TARGET_RELEASE_CONFIG.*?)(CODE_SIGN_STYLE = )Automatic;/${1}${2}Manual;\n\t\t\t\tCODE_SIGN_IDENTITY = "Developer ID Application";\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = "'"$PROFILE_NAME"'";/s' InputMetrics.xcodeproj/project.pbxproj
 
       - name: Resolve package dependencies
         run: xcodebuild -resolvePackageDependencies -project InputMetrics.xcodeproj -scheme InputMetrics
@@ -72,9 +72,7 @@ jobs:
             -scheme InputMetrics \
             -configuration Release \
             -destination 'platform=macOS' \
-            -archivePath build/InputMetrics.xcarchive \
-            CODE_SIGN_IDENTITY="Developer ID Application" \
-            DEVELOPMENT_TEAM=${{ secrets.APPLE_TEAM_ID }}
+            -archivePath build/InputMetrics.xcarchive
 
       - name: Inject provisioning profile into export options
         env:
