@@ -468,6 +468,10 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
 
+                        Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "–") (\(Bundle.main.infoDictionary?["CommitHash"] as? String ?? "dev"))")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+
                         Text("Track your productivity")
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
