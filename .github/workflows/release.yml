@@ -131,6 +131,7 @@ jobs:
           dmgbuild \
             -s scripts/dmg-settings.py \
             -D app=build/export/InputMetrics.app \
+            -D background=assets/dmg-background.png \
             "InputMetrics" \
             "InputMetrics-${TAG}.dmg"
 

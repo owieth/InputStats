@@ -13,7 +13,7 @@ icon_locations = {
     "Applications": (520, 190),
 }
 
-background = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../assets/dmg-background.png")
+background = defines.get("background", "assets/dmg-background.png")
 
 show_status_bar = False
 show_tab_view = False
