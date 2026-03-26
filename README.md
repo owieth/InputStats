@@ -8,8 +8,8 @@ A lightweight macOS menu bar app that tracks mouse movements, clicks, and keyboa
 
 ### Installation
 
-1. Download `InputMetrics-vX.X.X.zip` from the latest release
-2. Extract the ZIP and drag `InputMetrics.app` to `/Applications`
+1. Download `InputMetrics-vX.X.X.dmg` from the latest release
+2. Open the DMG and drag `InputMetrics.app` to `/Applications`
 3. Launch the app — it appears in your menu bar
 4. Grant **Accessibility** and **Input Monitoring** permissions when prompted
 
@@ -59,7 +59,7 @@ Releases are automated via GitHub Actions:
 
 1. **CI**: Every push to `main` runs build + test
 2. **Auto-tag**: After CI passes on `main`, a semver tag is created from conventional commits (`feat:` = minor, `fix:` = patch)
-3. **Release**: When a GitHub Release is published from a tag, the release workflow builds a signed and Apple-notarized `.app`, packages it as a ZIP, and uploads it as a release asset
+3. **Release**: When a GitHub Release is published from a tag, the release workflow builds a signed and Apple-notarized `.app`, packages it as a DMG, and uploads it as a release asset
 
 ## Roadmap
 
