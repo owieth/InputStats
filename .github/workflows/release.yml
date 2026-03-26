@@ -127,7 +127,7 @@ jobs:
       - name: Create DMG
         run: |
           TAG=${{ github.event.release.tag_name }}
-          pip3 install dmgbuild
+          pip3 install dmgbuild --break-system-packages
           dmgbuild \
             -s scripts/dmg-settings.py \
             -D app=build/export/InputMetrics.app \
