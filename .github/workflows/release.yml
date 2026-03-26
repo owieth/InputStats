@@ -127,19 +127,12 @@ jobs:
       - name: Create DMG
         run: |
           TAG=${{ github.event.release.tag_name }}
-          brew install create-dmg
-          create-dmg \
-            --volname "InputMetrics" \
-            --background "assets/dmg-background.png" \
-            --window-pos 200 120 \
-            --window-size 700 400 \
-            --icon-size 100 \
-            --text-size 1 \
-            --icon "InputMetrics.app" 180 190 \
-            --hide-extension "InputMetrics.app" \
-            --app-drop-link 520 190 \
-            "InputMetrics-${TAG}.dmg" \
-            "build/export/InputMetrics.app"
+          pip3 install dmgbuild
+          dmgbuild \
+            -s scripts/dmg-settings.py \
+            -D app=build/export/InputMetrics.app \
+            "InputMetrics" \
+            "InputMetrics-${TAG}.dmg"
 
       - name: Notarize and staple DMG
         env:
