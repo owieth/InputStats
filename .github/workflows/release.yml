@@ -78,12 +78,10 @@ jobs:
             -archivePath build/InputMetrics.xcarchive \
             OTHER_CODE_SIGN_FLAGS="--deep --timestamp --options runtime"
 
-      - name: Export app
+      - name: Extract app from archive
         run: |
-          xcodebuild -exportArchive \
-            -archivePath build/InputMetrics.xcarchive \
-            -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist
+          mkdir -p build/export
+          cp -R build/InputMetrics.xcarchive/Products/Applications/InputMetrics.app build/export/InputMetrics.app
 
       - name: Notarize app
         env:
