@@ -97,30 +97,35 @@ jobs:
       - name: Re-sign Sparkle XPC services
         run: |
           APP="build/export/InputMetrics.app"
-          IDENTITY="Developer ID Application"
+          FRAMEWORK="$APP/Contents/Frameworks/Sparkle.framework"
+          # Look up the full identity from the keychain to avoid ambiguity
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_NAME" | grep "Developer ID Application" | head -1 | awk '{print $2}')
 
-          # Re-sign all nested Sparkle binaries/bundles before notarization
-          find "$APP/Contents/Frameworks/Sparkle.framework" \
-            -type f \( -name "*.xpc" -o -name "Autoupdate" -o -name "Updater.app" -o -name "Sparkle" \) \
-            | while read -r bin; do
-              codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bin"
-            done
+          # Sign innermost binaries first (leaf nodes)
+          for bin in \
+            "$FRAMEWORK/Versions/B/XPCServices/Installer.xpc/Contents/MacOS/Installer" \
+            "$FRAMEWORK/Versions/B/XPCServices/Downloader.xpc/Contents/MacOS/Downloader" \
+            "$FRAMEWORK/Versions/B/Updater.app/Contents/MacOS/Updater" \
+            "$FRAMEWORK/Versions/B/Autoupdate" \
+            "$FRAMEWORK/Versions/B/Sparkle"; do
+            [ -f "$bin" ] && codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bin"
+          done
 
-          # Re-sign nested bundles (XPC services, helper apps)
-          find "$APP/Contents/Frameworks/Sparkle.framework" \
-            -type d \( -name "*.xpc" -o -name "*.app" \) \
-            | sort -r \
-            | while read -r bundle; do
-              codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bundle"
-            done
+          # Sign XPC bundles
+          for bundle in \
+            "$FRAMEWORK/Versions/B/XPCServices/Installer.xpc" \
+            "$FRAMEWORK/Versions/B/XPCServices/Downloader.xpc" \
+            "$FRAMEWORK/Versions/B/Updater.app"; do
+            [ -d "$bundle" ] && codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bundle"
+          done
 
-          # Re-sign Sparkle.framework itself
+          # Sign the framework version and framework itself
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime "$FRAMEWORK/Versions/B"
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime "$FRAMEWORK"
+
+          # Re-sign the main app to incorporate the updated framework signatures
           codesign --force --sign "$IDENTITY" --timestamp --options runtime \
-            "$APP/Contents/Frameworks/Sparkle.framework"
-
-          # Re-sign the app last
-          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
-            --entitlements InputMetrics/InputMetrics/InputMetrics.entitlements \
+            --preserve-metadata=identifier,entitlements,flags \
             "$APP"
 
       - name: Notarize app
