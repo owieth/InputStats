@@ -61,9 +61,16 @@ final class MenuBarViewModel {
         dateTimeFormatter.locale = Locale(identifier: "en_US_POSIX")
         dateTimeFormatter.dateFormat = "MMM d, HH:mm"
 
-        guard let firstDate = isoFormatter.date(from: first) ?? legacyFormatter.date(from: first),
-              let lastDate = isoFormatter.date(from: last) ?? legacyFormatter.date(from: last) else {
-            return "\(first) - \(last)"
+        let isFirstISO = isoFormatter.date(from: first) != nil
+        let isLastISO = isoFormatter.date(from: last) != nil
+
+        guard isFirstISO && isLastISO,
+              let firstDate = isoFormatter.date(from: first),
+              let lastDate = isoFormatter.date(from: last) else {
+            // Legacy HH:mm values — no date info, just display as-is
+            let firstDisplay = legacyFormatter.date(from: first).map { timeFormatter.string(from: $0) } ?? first
+            let lastDisplay = legacyFormatter.date(from: last).map { timeFormatter.string(from: $0) } ?? last
+            return "\(firstDisplay) - \(lastDisplay)"
         }
 
         let calendar = Calendar.current
