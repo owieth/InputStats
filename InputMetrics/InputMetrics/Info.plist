@@ -25,7 +25,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2025 Olivier Winkler. All rights reserved.</string>
+	<string>Copyright © 2026 Olivier Winkler. All rights reserved.</string>
 	<key>NSInputMonitoringUsageDescription</key>
 	<string>InputMetrics needs Input Monitoring access to track keyboard and mouse usage statistics.</string>
 	<key>NSAccessibilityUsageDescription</key>
