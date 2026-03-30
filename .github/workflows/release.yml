@@ -78,16 +78,6 @@ jobs:
             -archivePath build/InputMetrics.xcarchive \
             OTHER_CODE_SIGN_FLAGS="--deep --timestamp --options runtime"
 
-      - name: Inject provisioning profile into export options
-        env:
-          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
-        run: |
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/build.provisionprofile
-          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i /tmp/build.provisionprofile)")
-          rm /tmp/build.provisionprofile
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" ExportOptions.plist
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:com.inputmetrics.InputMetrics string $PROFILE_NAME" ExportOptions.plist
-
       - name: Export app
         run: |
           xcodebuild -exportArchive \
