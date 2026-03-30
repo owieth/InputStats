@@ -94,6 +94,35 @@ jobs:
             -exportPath build/export \
             -exportOptionsPlist ExportOptions.plist
 
+      - name: Re-sign Sparkle XPC services
+        run: |
+          APP="build/export/InputMetrics.app"
+          IDENTITY="Developer ID Application"
+
+          # Re-sign all nested Sparkle binaries/bundles before notarization
+          find "$APP/Contents/Frameworks/Sparkle.framework" \
+            -type f \( -name "*.xpc" -o -name "Autoupdate" -o -name "Updater.app" -o -name "Sparkle" \) \
+            | while read -r bin; do
+              codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bin"
+            done
+
+          # Re-sign nested bundles (XPC services, helper apps)
+          find "$APP/Contents/Frameworks/Sparkle.framework" \
+            -type d \( -name "*.xpc" -o -name "*.app" \) \
+            | sort -r \
+            | while read -r bundle; do
+              codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bundle"
+            done
+
+          # Re-sign Sparkle.framework itself
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
+            "$APP/Contents/Frameworks/Sparkle.framework"
+
+          # Re-sign the app last
+          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
+            --entitlements InputMetrics/InputMetrics/InputMetrics.entitlements \
+            "$APP"
+
       - name: Notarize app
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
