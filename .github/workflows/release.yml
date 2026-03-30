@@ -165,14 +165,14 @@ jobs:
           VERSION=${TAG#v}
           DMG="InputMetrics-${TAG}.dmg"
 
-          # Locate sign_update bundled with the resolved Sparkle package
-          SPARKLE_DIR=$(find ~/Library/Developer/Xcode/DerivedData -name "sign_update" 2>/dev/null | head -1 | xargs -I{} dirname {} 2>/dev/null || true)
-          if [ -z "$SPARKLE_DIR" ]; then
-            SPARKLE_DIR=$(find .build -name "sign_update" 2>/dev/null | head -1 | xargs -I{} dirname {} 2>/dev/null || true)
+          # Locate sign_update from resolved Sparkle SPM artifacts
+          SIGN_UPDATE=$(find ~/Library/Developer/Xcode/DerivedData -path "*/artifacts/sparkle/Sparkle/bin/sign_update" 2>/dev/null | head -1)
+          if [ -z "$SIGN_UPDATE" ]; then
+            echo "ERROR: sign_update not found. Ensure package dependencies are resolved." && exit 1
           fi
 
           # Sign the DMG and capture EdDSA signature
-          SIGNATURE=$(echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_DIR/sign_update" "$DMG" --ed-key-file -)
+          SIGNATURE=$(echo "$SPARKLE_PRIVATE_KEY" | "$SIGN_UPDATE" "$DMG" --ed-key-file -)
 
           DMG_SIZE=$(stat -f%z "$DMG")
           RELEASE_DATE=$(date -u "+%a, %d %b %Y %H:%M:%S +0000")
