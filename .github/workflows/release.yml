@@ -75,7 +75,8 @@ jobs:
             -scheme InputMetrics \
             -configuration Release \
             -destination 'platform=macOS' \
-            -archivePath build/InputMetrics.xcarchive
+            -archivePath build/InputMetrics.xcarchive \
+            OTHER_CODE_SIGN_FLAGS="--deep --timestamp --options runtime"
 
       - name: Inject provisioning profile into export options
         env:
@@ -93,40 +94,6 @@ jobs:
             -archivePath build/InputMetrics.xcarchive \
             -exportPath build/export \
             -exportOptionsPlist ExportOptions.plist
-
-      - name: Re-sign Sparkle XPC services
-        run: |
-          APP="build/export/InputMetrics.app"
-          FRAMEWORK="$APP/Contents/Frameworks/Sparkle.framework"
-          # Look up the full identity from the keychain to avoid ambiguity
-          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_NAME" | grep "Developer ID Application" | head -1 | awk '{print $2}')
-
-          # Sign innermost binaries first (leaf nodes)
-          for bin in \
-            "$FRAMEWORK/Versions/B/XPCServices/Installer.xpc/Contents/MacOS/Installer" \
-            "$FRAMEWORK/Versions/B/XPCServices/Downloader.xpc/Contents/MacOS/Downloader" \
-            "$FRAMEWORK/Versions/B/Updater.app/Contents/MacOS/Updater" \
-            "$FRAMEWORK/Versions/B/Autoupdate" \
-            "$FRAMEWORK/Versions/B/Sparkle"; do
-            [ -f "$bin" ] && codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bin"
-          done
-
-          # Sign XPC bundles
-          for bundle in \
-            "$FRAMEWORK/Versions/B/XPCServices/Installer.xpc" \
-            "$FRAMEWORK/Versions/B/XPCServices/Downloader.xpc" \
-            "$FRAMEWORK/Versions/B/Updater.app"; do
-            [ -d "$bundle" ] && codesign --force --sign "$IDENTITY" --timestamp --options runtime "$bundle"
-          done
-
-          # Sign the framework version and framework itself
-          codesign --force --sign "$IDENTITY" --timestamp --options runtime "$FRAMEWORK/Versions/B"
-          codesign --force --sign "$IDENTITY" --timestamp --options runtime "$FRAMEWORK"
-
-          # Re-sign the main app to incorporate the updated framework signatures
-          codesign --force --sign "$IDENTITY" --timestamp --options runtime \
-            --preserve-metadata=identifier,entitlements,flags \
-            "$APP"
 
       - name: Notarize app
         env:
